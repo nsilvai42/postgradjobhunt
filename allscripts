@@ -1,0 +1,3418 @@
+// GlobalConstants.gs
+/**
+ * @file This script automates various tasks for managing a student career sprint program.
+ * It handles the creation of individual student planner spreadsheets, aggregates task data,
+ * sends automated emails, and collects specific data points.
+ */
+
+// ===================================================================================================
+// I. SCRIPT CONFIGURATION & CONSTANTS
+// ===================================================================================================
+// This section defines all the "magic strings" and numbers used throughout the script.
+// Using constants makes the code easier to read and update. If a sheet or column name changes,
+// you only need to update it in one place right here.
+// ---------------------------------------------------------------------------------------------------
+
+// -------------------------------------------
+// A. Core Settings & Sheet Names
+// -------------------------------------------
+// These constants define the names of the sheets the script will interact with.
+const PLANNER_SETUP_SHEET     = "Planner Setup";            // Sheet for configuring the script's main settings.
+const ALL_PARTICIPANTS_SHEET  = "All Participants";         // Master list of every participant, past and present.
+const ACTIVE_PARTICIPANTS_SHEET = "Active Participants";      // The primary list of current, active participants for most operations.
+const FEARS_PURPOSE_SHEET     = "Fears and Purpose";        // The sheet where collected student fears and purposes are stored.
+const PARTICIPANTS_TEST_SHEET = "Test Active Participants";   // A safe list for testing the script without affecting real data.
+const TASKS_TEST_SHEET        = "Test Task Data";           // A safe output sheet for testing the task collection function.
+const TASK_DATA_SHEET         = "Task Data";                // The main output sheet where all task data from all students is compiled.
+const OUTREACH_PLAN_SHEET     = "Outreach Plan";            // Sheet containing the schedule and content for email campaigns.
+const OUTREACH_LOG_SHEET      = "Outreach Log";             // A log to record every email that is sent.
+const RESOURCE_MAP_SHEET      = "Resource Map";             // A sheet that maps button names to resource URLs for emails.
+
+// -------------------------------------------
+// B. 'Planner Setup' Sheet Configuration
+// -------------------------------------------
+const PLANNER_FOLDER_ID_CELL   = "B1"; // The cell (e.g., "B1") holding the ID of the Google Drive folder for new planners.
+const PLANNER_TEMPLATE_ID_CELL = "B2"; // The cell holding the ID of the Google Sheet template file to copy.
+const STATUS_CELL              = "B3"; // A cell for displaying status messages from the script.
+
+// -------------------------------------------
+// C. General Data Structure
+// -------------------------------------------
+const HEADER_ROW     = 1; // The row number where headers are located in most sheets.
+const DATA_START_ROW = 2; // The row number where actual data begins in most sheets.
+
+// -------------------------------------------
+// D. Common Column Names
+// -------------------------------------------
+// These are column header names that are used across multiple sheets.
+const COL_PTID       = "PTID";       // The column for the unique Participant ID.
+const COL_FIRST_NAME = "First Name"; // The column for the participant's first name.
+const COL_LAST_NAME  = "Last Name";  // The column for the participant's last name.
+const COL_EMAIL      = "Email";      // The column for the participant's email address.
+
+// -------------------------------------------
+// E. 'Participants' Sheets Column Names
+// -------------------------------------------
+const COL_PLANNER          = "Planner Link";      // The column with the URL to the student's individual planner sheet.
+const COL_ATTENDED         = "Attended?";         // A checkbox column to mark if a student attended an event.
+const COL_CHECKED_TASKS    = "Checked Off Tasks"; // A column to track the number of completed tasks.
+const COL_CURRENT_PROGRESS = "Current Progress";  // A column to show the student's overall progress.
+
+// Job Form Related Columns
+const COL_JOB_SECURED = "Job Secured?";     // A checkbox column to mark if a student has found a job.
+const COL_JOB_START   = "Job Secured Date"; // The column for the date the student's new job starts.
+
+// Email Sent Status Columns (one for each planned email)
+const COL_S1W0_SENT = "S1Week0 Sent"; // Tracks if the Sprint 1, Week 0 email was sent.
+const COL_S1W1_SENT = "S1Week1 Sent"; // Tracks if the Sprint 1, Week 1 email was sent.
+const COL_S1W2_SENT = "S1Week2 Sent"; // etc.
+const COL_S1W3_SENT = "S1Week3 Sent";
+const COL_S1W4_SENT = "S1Week4 Sent";
+const COL_S2W1_SENT = "S2Week1 Sent";
+const COL_S2W2_SENT = "S2Week2 Sent";
+const COL_S2W3_SENT = "S2Week3 Sent";
+const COL_S2W4_SENT = "S2Week4 Sent";
+const COL_S3W1_SENT = "S3Week1 Sent";
+const COL_S3W2_SENT = "S3Week2 Sent";
+const COL_S3W3_SENT = "S3Week3 Sent";
+const COL_S3W4_SENT = "S3Week4 Sent";
+
+// Outcome & Survey Data Columns
+const COL_S0_CONF_PRE  = "S0_Confidence_Pre";  // Student's self-reported confidence level before the program.
+const COL_S0_CONF_POST = "S0_Confidence_Post"; // Student's confidence level after the initial kickoff.
+const COL_S1_CONF      = "S1_Confidence";      // Confidence level after Sprint 1.
+const COL_S2_CONF      = "S2_Confidence";      // Confidence level after Sprint 2.
+const COL_S3_CONF      = "S3_Confidence";      // Confidence level after Sprint 3.
+
+const COL_S0_STAGE = "S0_Stage"; // Student's self-reported job search stage before the program.
+const COL_S1_STAGE = "S1_Stage"; // Job search stage after Sprint 1.
+const COL_S2_STAGE = "S2_Stage"; // Job search stage after Sprint 2.
+const COL_S3_STAGE = "S3_Stage"; // Job search stage after Sprint 3.
+
+const COL_S0_PROGRESS = "S0_Progress"; // Student's self-reported progress before the program.
+const COL_S1_PROGRESS = "S1_Progress"; // Progress after Sprint 1.
+const COL_S2_PROGRESS = "S2_Progress"; // Progress after Sprint 2.
+const COL_S3_PROGRESS = "S3_Progress"; // Progress after Sprint 3.
+
+// -------------------------------------------
+// F. 'Outreach Plan' Sheet Column Names
+// -------------------------------------------
+const COL_OUTREACH_NUM  = "Outreach #";    // A unique number for each email campaign.
+const COL_TEMPLATE      = "Template";      // The name of the email template to use (e.g., "Sprint1Week0").
+const COL_SPRINT        = "Sprint";        // The sprint number this email belongs to.
+const COL_WEEK          = "Week";          // The week number this email belongs to.
+const COL_SUBJECT_LINE  = "Subject Line";  // The subject line for the email.
+const COL_LINK_TO_DRAFT = "Link to Draft"; // A URL to a Google Doc draft of the email.
+const COL_DOC_ID        = "Google Doc ID"; // The ID of the Google Doc draft.
+const COL_SEND_DATE     = "Send Date";     // The planned date to send this email.
+const COL_STATUS        = "Status";        // The current status of the email (e.g., "Sent", "Draft").
+
+// -------------------------------------------
+// G. 'Outreach Log' Sheet Column Names
+// -------------------------------------------
+const COL_TIMESTAMP = "Timestamp"; // The column where the exact date and time of an email send is logged.
+
+// -------------------------------------------
+// H. 'Task Data' Sheet Column Names
+// -------------------------------------------
+const COL_TASK_ID       = "Task ID";       // The unique ID for a specific task.
+const COL_TASK          = "Task";          // The description of the task.
+const COL_DEADLINE      = "Deadline";      // The due date for the task.
+const COL_DUE_THIS_WEEK = "Due This Week?";// A calculated column to show if a task is due in the current week.
+const COL_OVERDUE       = "Overdue?";      // A calculated column to show if a task is past its deadline.
+const COL_DONE          = "Done?";         // A column indicating if the task has been completed.
+const COL_LAST_UPDATE   = "Last Update";   // A timestamp of when the task data was last fetched.
+
+// -------------------------------------------
+// I. 'Resource Map' Sheet Column Names
+// -------------------------------------------
+const COL_BUTTON_TEXT  = "Button Text";   // The text used in buttons in email templates.
+const COL_DESCRIPTION  = "Description";   // A description of what the resource is.
+const COL_RESOURCE_URL = "Resource URL";  // The actual URL that the button text will link to.
+
+// -------------------------------------------
+// J. 'Fears and Purpose' Sheet Column Names
+// -------------------------------------------
+const COL_FEAR    = "Fear";    // The column where a student's collected fear is stored.
+const COL_PURPOSE = "Purpose"; // The column where a student's collected purpose is stored.
+
+// -------------------------------------------
+// K. Student Planner (Template) Constants
+// -------------------------------------------
+// These constants refer to specific sheets and cells *inside* the student's own planner file.
+const PLANNER_WELCOME_SHEET = "🌟 Welcome";       // The name of the welcome sheet in the student planner.
+const PLANNER_FULLNAME_CELL = "C2";             // The cell to write the student's full name in their planner.
+const PLANNER_WELCOME_EMAIL = "C4";             // The cell to write the student's email in their planner.
+
+const PLANNER_FEAR_SHEET = "😣 Fears";           // The name of the sheet where students write their fears.
+const PLANNER_FEAR_CELL  = "B3";                // The specific cell containing the fear text.
+
+const PLANNER_PURPOSE_SHEET = "🎯 Purpose";       // The name of the sheet where students write their purpose.
+const PLANNER_PURPOSE_CELL  = "B3";             // The specific cell containing the purpose text.
+
+const PLANNER_CHECKLIST_SHEET = "✅ Checklist";      // The name of the main task checklist sheet.
+const PLANNER_SPRINT_SHEET    = "🏃🏼‍♂️ Sprint Planner"; // The name of the detailed sprint planning sheet.
+const PLANNER_COL_ID          = "ID";             // The name of the Task ID column within the planner.
+const PLANNER_COL_DONE        = "Done?";          // The name of the completion status column within the planner.
+const PLANNER_COL_DEADLINE    = "Deadline";       // The name of the deadline column within the planner.
+
+// This maps the standard column names in our 'Task Data' sheet to the (potentially different)
+// column names used inside the student's individual planner template.
+const STUDENT_HEADER_MAP = {
+  "Task ID": "ID",       // Maps our "Task ID" to the student planner's "ID" column.
+  Task:      "Task",     // Maps "Task" to "Task".
+  Deadline:  "Deadline", // Maps "Deadline" to "Deadline".
+  "Done?":   "Done?",    // Maps "Done?" to "Done?".
+};
+
+
+// ===================================================================================================
+// II. SCRIPT TRIGGER & MENU
+// ===================================================================================================
+
+/**
+ * Creates a custom menu in the Google Sheet UI when the spreadsheet is opened.
+ * This allows users to run the script's functions easily without needing to open the script editor.
+ */
+function onOpen() {
+  SpreadsheetApp.getUi() // Gets the user interface environment for the spreadsheet.
+    .createMenu("Admin Tools") // Creates a new top-level menu named "Admin Tools".
+    .addItem("🚀 Set Up Student Planners", "setupStudentPlanners") // Adds a menu item to run the planner setup function.
+    .addSeparator() // Adds a horizontal line to visually separate menu items.
+    .addItem("😣 Collect Student Fears", "collectStudentFears") // Adds a menu item to collect fears.
+    .addItem("🕊️ Collect Student Purpose", "collectStudentPurpose") // Adds a menu item to collect purposes.
+    .addSeparator() // Adds another separator.
+    .addItem("📊 Update Student Task Data", "fetchAllStudentTaskData") // Adds a menu item to fetch all task data.
+    .addSeparator() // Adds another separator.
+    .addItem("✉️ Send Kickoff Follow-Up", "sendKickoffFollowUpEmail") // Adds a menu item to send the kickoff email.
+    .addItem("✉️ Send Weekly Nudge", "sendWeeklyNudge") // Adds a menu item to send a weekly nudge email.
+    .addToUi(); // Finalizes the menu and adds it to the spreadsheet's UI.
+}
+
+// SetUpPlanners.gs
+/**
+ * Creates individual student planner spreadsheets from a template for each person
+ * listed in the 'All Participants' sheet. It copies a template, renames it,
+ * personalizes it with the student's name and email, and places a link to the
+ * new planner back into the main sheet.
+ */
+function setupStudentPlanners() {
+  // ---
+  // STEP 1: INITIAL SETUP & VALIDATION
+  // This section prepares the script by accessing the spreadsheet and the necessary sheets.
+  // It also validates that the required Folder ID and Template ID have been set.
+  // ---
+  const ui = SpreadsheetApp.getUi(); // Get the user interface to show alerts and messages.
+  const ss = SpreadsheetApp.getActive();
+  const setupSheet = ss.getSheetByName(PLANNER_SETUP_SHEET);
+  const partsSheet = ss.getSheetByName(ALL_PARTICIPANTS_SHEET);
+
+  // Verify that the core sheets exist before continuing.
+  if (!setupSheet || !partsSheet) {
+    ui.alert(
+      "Error",
+      `Missing sheet: "${PLANNER_SETUP_SHEET}" or "${ALL_PARTICIPANTS_SHEET}".`,
+      ui.ButtonSet.OK
+    );
+    return; // Stop the script if a required sheet is missing.
+  }
+
+  // Read the Folder and Template IDs from the 'Planner Setup' sheet.
+  const folderId = setupSheet.getRange(PLANNER_FOLDER_ID_CELL).getValue();
+  const templateId = setupSheet.getRange(PLANNER_TEMPLATE_ID_CELL).getValue();
+
+  // Verify that the IDs are present.
+  if (!folderId || !templateId) {
+    ui.alert(
+      "Error",
+      `Please set both Planner Folder ID and Template ID in the '${PLANNER_SETUP_SHEET}' sheet.`,
+      ui.ButtonSet.OK
+    );
+    return; // Stop the script if IDs are missing.
+  }
+
+  // Try to access the Drive folder and template file to ensure they are valid.
+  let tplFile, tgtFolder;
+  try {
+    tplFile = DriveApp.getFileById(templateId);
+  } catch (e) {
+    ui.alert("Error", `Cannot open the template file. Check the Template ID. Error: ${e}`, ui.ButtonSet.OK);
+    return;
+  }
+  try {
+    tgtFolder = DriveApp.getFolderById(folderId);
+  } catch (e) {
+    ui.alert("Error", `Cannot open the target folder. Check the Folder ID. Error: ${e}`, ui.ButtonSet.OK);
+    return;
+  }
+
+  // ---
+  // STEP 2: MAP HEADERS TO COLUMN POSITIONS
+  // This makes the script flexible. If you rearrange columns in the sheet,
+  // the script will still find the right data as long as the header names don't change.
+  // ---
+  const lastCol = partsSheet.getLastColumn();
+  const headerRowValues = partsSheet.getRange(HEADER_ROW, 1, 1, lastCol).getValues()[0];
+  const headerIndex = {};
+  headerRowValues.forEach((h, i) => {
+    headerIndex[h] = i + 1; // Map header name to its column number (e.g., "First Name": 2).
+  });
+
+  // Using the map, find the column numbers for the data we need.
+  const colFirstName = headerIndex[COL_FIRST_NAME];
+  const colLastName = headerIndex[COL_LAST_NAME];
+  const colEmail = headerIndex[COL_EMAIL];
+  const colPlanner = headerIndex[COL_PLANNER];
+
+  // Verify that all required columns were found.
+  if (!colFirstName || !colLastName || !colEmail || !colPlanner) {
+    ui.alert(
+      "Error",
+      `One of these headers is missing in "${ALL_PARTICIPANTS_SHEET}":\n` +
+      `"${COL_FIRST_NAME}", "${COL_LAST_NAME}", "${COL_EMAIL}", or "${COL_PLANNER}".`,
+      ui.ButtonSet.OK
+    );
+    return;
+  }
+
+  // ---
+  // STEP 3: FETCH PARTICIPANT DATA
+  // This section gets all the participant rows from the sheet in a single, efficient operation.
+  // ---
+  const lastRow = partsSheet.getLastRow();
+  if (lastRow < DATA_START_ROW) {
+    ui.alert("Info", `No participants found starting from row ${DATA_START_ROW}.`, ui.ButtonSet.OK);
+    return;
+  }
+  const numRows = lastRow - DATA_START_ROW + 1; // Calculate how many rows of data to fetch.
+
+  // Define the block of data to get, from the first name column to the planner link column.
+  const width = colPlanner - colFirstName + 1;
+  const data = partsSheet.getRange(DATA_START_ROW, colFirstName, numRows, width).getValues();
+
+  // ---
+  // STEP 4: PROCESS EACH PARTICIPANT
+  // Loop through each row of data, create a planner, and update the sheet.
+  // ---
+  let success = 0, errors = 0, skipped = 0;
+
+  data.forEach((rowValues, i) => {
+    const rowNum = DATA_START_ROW + i;
+
+    // Get the values for the current student using their relative position in the `data` array.
+    const firstName = rowValues[0];
+    const lastName = rowValues[colLastName - colFirstName];
+    const email = rowValues[colEmail - colFirstName];
+    const linkCell = partsSheet.getRange(rowNum, colPlanner);
+
+    // Skip this row if essential info is missing or if a planner link already exists.
+    if (!firstName || !email) {
+      skipped++;
+      return;
+    }
+    if (linkCell.getValue()) {
+      skipped++;
+      return;
+    }
+
+    // This is the core action: create and personalize the planner.
+    try {
+      // Make a copy of the template file and rename it for the student.
+      const newFile = tplFile.makeCopy(`${firstName} ${lastName} - Career Planner`, tgtFolder);
+      const newUrl = newFile.getUrl();
+      linkCell.setValue(newUrl); // Write the new planner's URL back to the main sheet.
+
+      // Open the new planner to add the student's personal information.
+      const stSS = SpreadsheetApp.openById(newFile.getId());
+      const welcomeSheet = stSS.getSheetByName(PLANNER_WELCOME_SHEET);
+      if (welcomeSheet) {
+        welcomeSheet.getRange(PLANNER_FULLNAME_CELL).setValue(`${firstName} ${lastName}`);
+        welcomeSheet.getRange(PLANNER_WELCOME_EMAIL).setValue(email);
+      }
+      success++;
+    } catch (e) {
+      // If anything goes wrong during the copy/edit process, log the error.
+      errors++;
+      linkCell.setValue(`ERROR: ${e.message.substring(0, 80)}`); // Put a brief error in the cell.
+      Logger.log(`Error on row ${rowNum}: ${e.stack || e}`); // Log the full error for debugging.
+    }
+  });
+
+  // ---
+  // STEP 5: DISPLAY FINAL SUMMARY
+  // ---
+  ui.alert(
+    "Finished",
+    `Done. Success: ${success}, Errors: ${errors}, Skipped: ${skipped}.`,
+    ui.ButtonSet.OK
+  );
+}
+
+// GetFearsAndPurpose.gs
+// ===================================================================================================
+// STUDENT DATA COLLECTION FUNCTIONS
+// ===================================================================================================
+
+/**
+ * Collects each student's self-reported "fear" from their individual planner.
+ * It reads the planner link for each attended student, opens the sheet, finds
+ * the specific cell, cleans the text, and writes the result to the
+ * 'Fears and Purpose' sheet, overwriting any previous data.
+ */
+function collectStudentFears() {
+  // ---
+  // STEP 1: INITIAL SETUP & VALIDATION
+  // Access the main spreadsheet and the specific sheets needed for this operation.
+  // ---
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const participantsSheet = ss.getSheetByName(ALL_PARTICIPANTS_SHEET);
+  const outputSheet = ss.getSheetByName(FEARS_PURPOSE_SHEET);
+
+  // Verify that the required sheets exist before continuing.
+  if (!participantsSheet || !outputSheet) {
+    ui.alert("Missing 'All Participants' or 'Fears and Purpose' sheet.");
+    return;
+  }
+
+  // ---
+  // STEP 2: MAP HEADERS TO COLUMN POSITIONS
+  // This makes the script robust by finding columns by name, not by fixed position.
+  // ---
+  const lastCol = participantsSheet.getLastColumn();
+  const headerRowValues = participantsSheet.getRange(HEADER_ROW, 1, 1, lastCol).getValues()[0];
+  const headerIndex = {};
+  headerRowValues.forEach((h, i) => {
+    headerIndex[h] = i + 1; // Map header name to its column number (e.g., "PTID": 1).
+  });
+
+  // Find the column numbers for PTID, Planner Link, and Attended status.
+  const colPtid = headerIndex[COL_PTID];
+  const colPlanner = headerIndex[COL_PLANNER];
+  const colAttended = headerIndex[COL_ATTENDED];
+
+  // Verify that all required columns were found.
+  if (!colPtid || !colPlanner || !colAttended) {
+    ui.alert(
+      "Error",
+      `One of these headers is missing in "${ALL_PARTICIPANTS_SHEET}":\n` +
+      `"${COL_PTID}", "${COL_PLANNER}", or "${COL_ATTENDED}".`,
+      ui.ButtonSet.OK
+    );
+    return;
+  }
+
+  // ---
+  // STEP 3: FETCH PARTICIPANT DATA
+  // Get all participant rows from the sheet in a single operation for efficiency.
+  // ---
+  const lastRow = participantsSheet.getLastRow();
+  if (lastRow < DATA_START_ROW) {
+    ui.alert("Info", `No participants found from row ${DATA_START_ROW}.`, ui.ButtonSet.OK);
+    return;
+  }
+  const numRows = lastRow - DATA_START_ROW + 1;
+  const data = participantsSheet.getRange(DATA_START_ROW, 1, numRows, lastCol).getValues();
+
+  // ---
+  // STEP 4: PROCESS EACH PARTICIPANT & COLLECT FEARS
+  // Loop through the data, open planners for attended students, and grab the fear text.
+  // ---
+  const output = [[COL_PTID, COL_FEAR]]; // Prepare an array for the results, starting with headers.
+
+  data.forEach((rowValues) => {
+    // Check if the "Attended?" checkbox is ticked and a planner link exists.
+    const attended = rowValues[colAttended - 1] === true;
+    const plannerUrl = rowValues[colPlanner - 1];
+    if (!attended || !plannerUrl) {
+      return; // Skip this student if they didn't attend or don't have a planner.
+    }
+
+    try {
+      const ptid = rowValues[colPtid - 1];
+      const studentSS = SpreadsheetApp.openByUrl(plannerUrl);
+      const fearSheet = studentSS.getSheetByName(PLANNER_FEAR_SHEET);
+      if (!fearSheet) return; // Skip if the student's "Fears" sheet is missing.
+
+      // Read the value from the fear cell, clean it by removing emojis, and add it to our output list.
+      const rawFear = fearSheet.getRange(PLANNER_FEAR_CELL).getValue();
+      const cleanFear = removeEmojis(rawFear);
+      output.push([ptid, cleanFear]);
+
+    } catch (e) {
+      // If opening a planner fails, log the error for debugging and continue.
+      Logger.log(`Error with PTID ${rowValues[colPtid - 1]}: ${e.message}`);
+    }
+  });
+
+  // ---
+  // STEP 5: WRITE COLLECTED DATA TO THE OUTPUT SHEET
+  // ---
+  if (output.length > 1) {
+    // Overwrite the sheet with the newly collected data.
+    outputSheet.getRange(1, 1, output.length, 2).setValues(output);
+    ui.alert(`✅ Collected fears from ${output.length - 1} attended students.`);
+  } else {
+    ui.alert("No attended students with a planner link were found to collect fears from.");
+  }
+}
+
+/**
+ * Collects each student's self-reported "purpose" from their individual planner.
+ * Unlike the fears function, this one UPDATES the existing 'Fears and Purpose' sheet,
+ * matching by PTID, so it should be run after fears have been collected.
+ */
+function collectStudentPurpose() {
+  // ---
+  // STEP 1: INITIAL SETUP & VALIDATION
+  // ---
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const participantsSheet = ss.getSheetByName(ACTIVE_PARTICIPANTS_SHEET);
+  const outputSheet = ss.getSheetByName(FEARS_PURPOSE_SHEET);
+
+  if (!participantsSheet || !outputSheet) {
+    ui.alert("Missing 'Active Participants' or 'Fears and Purpose' sheet.");
+    return;
+  }
+
+  // ---
+  // STEP 2: MAP HEADERS FOR BOTH SHEETS
+  // We need to know the column positions in both the source (Participants) and destination (Fears) sheets.
+  // ---
+  const headersP = participantsSheet.getRange(1, 1, 1, participantsSheet.getLastColumn()).getValues()[0];
+  const headerIndexP = {};
+  headersP.forEach((h, i) => (headerIndexP[h] = i + 1));
+
+  const headersOut = outputSheet.getRange(1, 1, 1, outputSheet.getLastColumn()).getValues()[0];
+  const headerIndexOut = {};
+  headersOut.forEach((h, i) => (headerIndexOut[h] = i + 1));
+
+  // Find required columns in the Participants sheet.
+  const colPtid = headerIndexP[COL_PTID];
+  const colPlanner = headerIndexP[COL_PLANNER];
+  if (!colPtid || !colPlanner) {
+    ui.alert(`Error: A required header is missing in "${ACTIVE_PARTICIPANTS_SHEET}".`);
+    return;
+  }
+
+  // Find required columns in the Fears and Purpose output sheet.
+  const colPtidOut = headerIndexOut[COL_PTID];
+  const colPurposeOut = headerIndexOut[COL_PURPOSE];
+  if (!colPtidOut || !colPurposeOut) {
+    ui.alert(`Error: A required header is missing in "${FEARS_PURPOSE_SHEET}".`);
+    return;
+  }
+
+  // ---
+  // STEP 3: MAP EXISTING PTIDS TO THEIR ROW NUMBER
+  // To update the correct row for each student, we first create a map of
+  // all PTIDs already in the output sheet to their corresponding row number.
+  // ---
+  const lastRowOut = outputSheet.getLastRow();
+  let ptidToRow = {};
+  if (lastRowOut >= DATA_START_ROW) {
+    const ptidValues = outputSheet.getRange(DATA_START_ROW, colPtidOut, lastRowOut - DATA_START_ROW + 1, 1).getValues();
+    ptidValues.forEach((r, i) => {
+      if (r[0]) ptidToRow[r[0]] = i + DATA_START_ROW; // e.g., { "PID-001": 2, "PID-002": 3 }
+    });
+  }
+
+  // ---
+  // STEP 4: FETCH PARTICIPANT DATA & PROCESS EACH STUDENT
+  // ---
+  const lastRowP = participantsSheet.getLastRow();
+  if (lastRowP < DATA_START_ROW) {
+    ui.alert("Info: No participants found to process.", ui.ButtonSet.OK);
+    return;
+  }
+  const numRowsP = lastRowP - DATA_START_ROW + 1;
+  const dataP = participantsSheet.getRange(DATA_START_ROW, colPtid, numRowsP, colPlanner - colPtid + 1).getValues();
+
+  let successes = 0;
+  dataP.forEach((rowValues) => {
+    const ptid = rowValues[0];
+    const plannerUrl = rowValues[colPlanner - colPtid];
+    if (!ptid || !plannerUrl) return; // Skip if missing essential data.
+
+    try {
+      const studentSS = SpreadsheetApp.openByUrl(plannerUrl);
+      const purposeSheet = studentSS.getSheetByName(PLANNER_PURPOSE_SHEET);
+      if (!purposeSheet) return; // Skip if the "Purpose" sheet is missing in the planner.
+
+      // Read the purpose from the cell and clean it.
+      const rawPurpose = purposeSheet.getRange(PLANNER_PURPOSE_CELL).getValue();
+      const cleanPurpose = removeEmojis(rawPurpose);
+
+      // Find the correct row to write to using the map created in Step 3.
+      const targetRow = ptidToRow[ptid];
+      if (targetRow) {
+        // If the student's PTID exists in the map, write the purpose to that row.
+        outputSheet.getRange(targetRow, colPurposeOut).setValue(cleanPurpose);
+        successes++;
+      }
+    } catch (e) {
+      Logger.log(`Error with PTID ${ptid}: ${e.message}`);
+    }
+  });
+
+  // ---
+  // STEP 5: DISPLAY FINAL SUMMARY
+  // ---
+  ui.alert(`✅ Wrote Purpose for ${successes} students.`);
+}
+
+// ===================================================================================================
+// V. UTILITY FUNCTIONS
+// ===================================================================================================
+
+/**
+ * A helper function that removes a wide range of emoji and special symbol
+ * characters from a string of text.
+ * @param {string} text The text that may contain emojis.
+ * @return {string} The text with emojis removed.
+ */
+function removeEmojis(text) {
+  // This uses a regular expression to find and replace a comprehensive list of
+  // Unicode emoji characters with nothing, effectively deleting them. The "u" flag
+  // ensures it correctly handles modern, multi-byte emojis.
+  return String(text).replace(
+    /[\u{1F300}-\u{1F5FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}]/gu,
+    ""
+  );
+}
+
+// MatchZoomPolls.gs
+/**
+ * Imports Sprint 0 outcomes from 'Intro_Poll' and 'Closing_Poll' sheets
+ * into the 'All Participants' sheet. It uses a sophisticated matching
+ * logic to link poll data (from Zoom names) to participants, first by
+ * trying an exact name match, and then falling back to a "fuzzy" match
+ * for names that are slightly different.
+ */
+function importSprint0Outcomes() {
+  const ss = SpreadsheetApp.getActive();
+  const ui = SpreadsheetApp.getUi();
+
+  // ---
+  // INITIAL SETUP & SHEET VALIDATION
+  // Open all the required sheets and verify they exist.
+  // ---
+  const participantsSheet = ss.getSheetByName(ALL_PARTICIPANTS_SHEET);
+  const introSheet = ss.getSheetByName("Intro_Poll");
+  const closingSheet = ss.getSheetByName("Closing_Poll");
+  if (!participantsSheet || !introSheet || !closingSheet) {
+    ui.alert(
+      "Error",
+      "Missing one or more sheets: “All Participants”, “Intro_Poll”, or “Closing_Poll”.",
+      ui.ButtonSet.OK
+    );
+    return;
+  }
+
+  // ---
+  // HEADER MAPPING & VALIDATION
+  // Create a map of header names to column numbers for each sheet. This makes the
+  // script flexible to column order changes. Then, verify all required headers are present.
+  // ---
+  function buildHeaderIndex(sheet) {
+    const lastCol = sheet.getLastColumn();
+    const headerRow = sheet.getRange(HEADER_ROW, 1, 1, lastCol).getValues()[0];
+    const map = {};
+    headerRow.forEach((h, i) => (map[h] = i + 1));
+    return map;
+  }
+  const pIndex = buildHeaderIndex(participantsSheet);
+  const iIndex = buildHeaderIndex(introSheet);
+  const cIndex = buildHeaderIndex(closingSheet);
+
+  // Verify required headers in 'All Participants' sheet.
+  const colPtid = pIndex[COL_PTID];
+  const colFirstName = pIndex[COL_FIRST_NAME];
+  const colLastName = pIndex[COL_LAST_NAME];
+  const colS0Stage = pIndex[COL_S0_STAGE];
+  const colS0ConfPre = pIndex[COL_S0_CONF_PRE];
+  const colS0ConfPost = pIndex[COL_S0_CONF_POST];
+  if (!colPtid || !colFirstName || !colLastName || !colS0Stage || !colS0ConfPre || !colS0ConfPost) {
+    ui.alert("Error: One or more required headers are missing in the 'All Participants' sheet.");
+    return;
+  }
+
+  // Verify required headers in 'Intro_Poll' sheet.
+  const colIntroUser = iIndex["User Name"];
+  const colIntroStage = iIndex[COL_S0_STAGE];
+  const colIntroConfPre = iIndex[COL_S0_CONF_PRE];
+  if (!colIntroUser || !colIntroStage || !colIntroConfPre) {
+    ui.alert("Error: One or more required headers are missing in the 'Intro_Poll' sheet.");
+    return;
+  }
+
+  // Verify required headers in 'Closing_Poll' sheet.
+  const colCloseUser = cIndex["User Name"];
+  const colCloseConfPost = cIndex[COL_S0_CONF_POST];
+  if (!colCloseUser || !colCloseConfPost) {
+    ui.alert("Error: One or more required headers are missing in the 'Closing_Poll' sheet.");
+    return;
+  }
+
+  // ---
+  // PARTICIPANT NAME MAPPING
+  // Create a map where the key is a cleaned-up version of a participant's full name
+  // (e.g., "johnsmith") and the value is their row number. This is for fast lookups.
+  // ---
+  const lastPRow = participantsSheet.getLastRow();
+  if (lastPRow < DATA_START_ROW) {
+    ui.alert("Info: No participants found to process.");
+    return;
+  }
+  const numPRows = lastPRow - DATA_START_ROW + 1;
+  const pRange = participantsSheet.getRange(DATA_START_ROW, colFirstName, numPRows, colLastName - colFirstName + 1);
+  const pValues = pRange.getValues();
+  const nameToRow = {};
+
+  pValues.forEach((row, i) => {
+    // Clean the name by making it lowercase and removing all spaces.
+    const rawFirst = ("" + row[0]).trim().toLowerCase().replace(/\s+/g, "");
+    const rawLast = ("" + row[colLastName - colFirstName]).trim().toLowerCase().replace(/\s+/g, "");
+    if (rawFirst && rawLast) {
+      const key = rawFirst + rawLast;
+      nameToRow[key] = DATA_START_ROW + i; // e.g., { "janesmith": 3 }
+    }
+  });
+  const participantKeys = Object.keys(nameToRow); // A list of all cleaned participant names.
+
+  // ---
+  // HELPER FUNCTIONS FOR NAME MATCHING
+  // These functions clean the names from the poll data and find the best match
+  // in the participant list.
+  // ---
+
+  /** Normalizes a raw Zoom "User Name" into a clean key for matching. */
+  function normalizeZoomKey(rawName) {
+    if (!rawName) return null;
+    let s = String(rawName).replace(/#.*/, ""); // Remove "#..." suffix.
+    s = s.replace(/\(.*?\)/g, ""); // Remove anything in parentheses.
+    s = s.trim().replace(/\s+/g, "").toLowerCase(); // Remove all spaces and lowercase.
+    return s || null;
+  }
+
+  /** Calculates the "edit distance" between two strings for fuzzy matching. */
+  function levenshtein(a, b) {
+    const dp = Array(a.length + 1).fill(null).map(() => Array(b.length + 1).fill(null));
+    for (let i = 0; i <= a.length; i++) dp[i][0] = i;
+    for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+    for (let i = 1; i <= a.length; i++) {
+      for (let j = 1; j <= b.length; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
+      }
+    }
+    return dp[a.length][b.length];
+  }
+
+  /** Finds the best matching participant row for a given Zoom name key. */
+  function findBestMatchRow(zoomKey) {
+    if (!zoomKey) return null;
+    if (nameToRow[zoomKey]) return nameToRow[zoomKey]; // First, try an exact match.
+
+    // If no exact match, try a "fuzzy" match.
+    let bestDist = Infinity;
+    let bestKey = null;
+    for (const pKey of participantKeys) {
+      const dist = levenshtein(zoomKey, pKey);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestKey = pKey;
+      }
+      if (dist === 0) break; // Early exit if we find a perfect match.
+    }
+    // Only accept a fuzzy match if the "distance" is very small (i.e., the names are very similar).
+    if (bestKey !== null && bestDist <= 2) {
+      Logger.log(`Fuzzy matched "${zoomKey}" to "${bestKey}" (distance=${bestDist})`);
+      return nameToRow[bestKey];
+    }
+    return null;
+  }
+
+  // ---
+  // PROCESS INTRO POLL DATA
+  // Go through each row of the 'Intro_Poll' sheet, find the matching participant,
+  // and write their pre-sprint confidence and stage data.
+  // ---
+  const lastIRow = introSheet.getLastRow();
+  if (lastIRow >= DATA_START_ROW) {
+    const iValues = introSheet.getRange(DATA_START_ROW, 1, lastIRow - DATA_START_ROW + 1, introSheet.getLastColumn()).getValues();
+    iValues.forEach((row) => {
+      const zoomKey = normalizeZoomKey(row[colIntroUser - 1]);
+      if (!zoomKey) return;
+      const targetRow = findBestMatchRow(zoomKey);
+      if (!targetRow) {
+        Logger.log(`Intro_Poll: No match found for "${row[colIntroUser - 1]}"`);
+        return;
+      }
+      // Write the values to the participant's row.
+      participantsSheet.getRange(targetRow, colS0Stage).setValue(row[colIntroStage - 1]);
+      participantsSheet.getRange(targetRow, colS0ConfPre).setValue(row[colIntroConfPre - 1]);
+    });
+  }
+
+  // ---
+  // PROCESS CLOSING POLL DATA
+  // Go through each row of the 'Closing_Poll' sheet, find the matching participant,
+  // and write their post-sprint confidence data.
+  // ---
+  const lastCRow = closingSheet.getLastRow();
+  if (lastCRow >= DATA_START_ROW) {
+    const cValues = closingSheet.getRange(DATA_START_ROW, 1, lastCRow - DATA_START_ROW + 1, closingSheet.getLastColumn()).getValues();
+    cValues.forEach((row) => {
+      const zoomKey = normalizeZoomKey(row[colCloseUser - 1]);
+      if (!zoomKey) return;
+      const targetRow = findBestMatchRow(zoomKey);
+      if (!targetRow) {
+        Logger.log(`Closing_Poll: No match found for "${row[colCloseUser - 1]}"`);
+        return;
+      }
+      // Write the value to the participant's row.
+      participantsSheet.getRange(targetRow, colS0ConfPost).setValue(row[colCloseConfPost - 1]);
+    });
+  }
+
+  ui.alert("✅ Sprint 0 outcomes imported successfully.");
+}
+
+// GetTaskData.gs
+/**
+ * Fetches and aggregates task data from all individual student planners.
+ * It opens each student's planner, reads their tasks, compiles the data into
+ * the 'Task Data' sheet, and calculates each student's task completion
+ * percentage, writing it back to the 'Active Participants' sheet.
+ */
+function fetchAllStudentTaskData() {
+  // ---
+  // INITIAL SETUP & VALIDATION
+  // This section prepares the script by accessing the spreadsheet and the necessary sheets.
+  // It also gracefully handles whether the script is run manually (with a UI) or by a trigger.
+  // ---
+  let ui;
+  try {
+    ui = SpreadsheetApp.getUi(); // Get the UI to show messages if run manually.
+  } catch (e) {
+    ui = null; // If run by a trigger, there's no UI.
+  }
+
+  const ss = SpreadsheetApp.getActive();
+  const partsSheet = ss.getSheetByName(ACTIVE_PARTICIPANTS_SHEET);
+  const taskSheet = ss.getSheetByName(TASK_DATA_SHEET);
+
+  // Verify that the core sheets exist before continuing.
+  if (!partsSheet || !taskSheet) {
+    if (ui) ui.alert("Error", `Missing sheet: "${ACTIVE_PARTICIPANTS_SHEET}" or "${TASK_DATA_SHEET}".`);
+    return; // Stop the script if a required sheet is missing.
+  }
+
+  // ---
+  // HEADER MAPPING & VALIDATION
+  // This makes the script flexible. If you rearrange columns in the participants sheet,
+  // the script will still find the right data as long as the header names don't change.
+  // ---
+  const headerRowP = partsSheet.getRange(HEADER_ROW, 1, 1, partsSheet.getLastColumn()).getValues()[0];
+  const pIndex = {};
+  headerRowP.forEach((h, i) => (pIndex[h] = i + 1)); // Map header name to its column number.
+
+  const colPtid = pIndex[COL_PTID];
+  const colFirst = pIndex[COL_FIRST_NAME];
+  const colLast = pIndex[COL_LAST_NAME];
+  const colEmail = pIndex[COL_EMAIL];
+  const colPlanner = pIndex[COL_PLANNER];
+  const colProgress = pIndex[COL_CURRENT_PROGRESS];
+
+  // Verify that all required columns were found.
+  if ([colPtid, colFirst, colLast, colEmail, colPlanner, colProgress].some(c => c == null)) {
+    if (ui) ui.alert("Error", `A required header is missing in the "${ACTIVE_PARTICIPANTS_SHEET}" sheet.`);
+    return;
+  }
+
+  // ---
+  // DATA PREPARATION
+  // Fetch the participant roster and calculate the date boundaries for the current week.
+  // ---
+  const numRows = partsSheet.getLastRow() - DATA_START_ROW + 1;
+  const widthRoster = colPlanner - colPtid + 1;
+  const roster = partsSheet.getRange(DATA_START_ROW, colPtid, numRows, widthRoster).getValues();
+
+  // Calculate the Monday and Sunday of the current week to determine if tasks are due.
+  const today = new Date();
+  const dow = today.getDay(); // Sunday = 0, Monday = 1, etc.
+  const mon = new Date(today);
+  mon.setDate(today.getDate() - dow + (dow === 0 ? -6 : 1)); // Logic to find the most recent Monday.
+  const sun = new Date(today);
+  sun.setDate(mon.getDate() + 6);
+
+  // Prepare arrays and objects to hold the results.
+  const taskHeaders = [
+    COL_PTID, COL_FIRST_NAME, COL_LAST_NAME, COL_EMAIL,
+    COL_TASK_ID, COL_TASK, COL_DEADLINE,
+    COL_DUE_THIS_WEEK, COL_OVERDUE, COL_DONE, COL_LAST_UPDATE
+  ];
+  const out = [taskHeaders]; // This will hold all the compiled task data.
+  const progressMap = {}; // This will track task completion for each student.
+  let totalTasks = 0;
+
+  // ---
+  // MAIN PROCESSING LOOP: ITERATE THROUGH EACH PARTICIPANT
+  // ---
+  roster.forEach((rowValues) => {
+    const ptid = rowValues[0];
+    const firstName = rowValues[colFirst - colPtid];
+    const lastName = rowValues[colLast - colPtid];
+    const email = rowValues[colEmail - colPtid];
+    const plannerUrl = rowValues[colPlanner - colPtid];
+    if (!plannerUrl) return; // Skip if the student has no planner link.
+
+    progressMap[ptid] = progressMap[ptid] || { totalCount: 0, doneCount: 0 };
+
+    // Open the student's planner and their "Sprint Planner" sheet.
+    let stSS;
+    try {
+      stSS = SpreadsheetApp.openByUrl(plannerUrl);
+    } catch (e) {
+      Logger.log(`Cannot open planner for ${ptid}: ${e}`);
+      return;
+    }
+    const sp = stSS.getSheetByName(PLANNER_SPRINT_SHEET);
+    if (!sp) return;
+
+    // Read all data from the sprint sheet and find the header row.
+    const data = sp.getDataRange().getValues();
+    const hdrRowIdx = data.findIndex(r => r.some(c => String(c || "").trim().toLowerCase() === PLANNER_COL_ID.toLowerCase()));
+    if (hdrRowIdx < 0) return; // Skip if the header row can't be found.
+
+    // Create a header map for the student's sheet.
+    const normed = data[hdrRowIdx].map(c => String(c || "").trim().toLowerCase());
+    const idxMap = normed.reduce((m, h, j) => ((m[h] = j), m), {});
+
+    // ---
+    // INNER LOOP: ITERATE THROUGH EACH TASK IN THE STUDENT'S PLANNER
+    // ---
+    for (let r = hdrRowIdx + 1; r < data.length; r++) {
+      const vals = data[r];
+      const getCell = key => {
+        const mapped = STUDENT_HEADER_MAP[key].trim().toLowerCase();
+        const ci = idxMap[mapped];
+        return (ci != null && ci < vals.length) ? vals[ci] : "";
+      };
+
+      const rawId = String(getCell(COL_TASK_ID) || "").trim();
+      if (!rawId) continue; // Skip if the row has no Task ID.
+
+      // Process the deadline and completion status.
+      const rawDL = getCell(COL_DEADLINE);
+      let dlDate = null;
+      if (rawDL instanceof Date) dlDate = new Date(rawDL.getFullYear(), rawDL.getMonth(), rawDL.getDate());
+      else if (!isNaN(Date.parse(rawDL))) {
+        const tmp = new Date(rawDL);
+        dlDate = new Date(tmp.getFullYear(), tmp.getMonth(), tmp.getDate());
+      }
+      const dr = getCell(COL_DONE);
+      const done = dr === true || dr === 1 || ["true", "yes", "x", "✓", "done"].includes(String(dr || "").trim().toLowerCase());
+
+      // Update progress counters for this student.
+      progressMap[ptid].totalCount++;
+      if (done) progressMap[ptid].doneCount++;
+
+      // Determine if the task is due this week or overdue.
+      const dueThis = dlDate && !done && dlDate >= mon && dlDate <= sun ? "Yes" : "No";
+      const overdue = dlDate && !done && dlDate < mon ? "Yes" : "No";
+
+      // Add the processed task data to our main output list.
+      out.push([ ptid, firstName, lastName, email, rawId, getCell(COL_TASK), rawDL, dueThis, overdue, done, new Date() ]);
+      totalTasks++;
+    }
+  });
+
+  // ---
+  // WRITE RESULTS TO SHEETS
+  // ---
+  // Clear the old data and write the newly compiled tasks to the 'Task Data' sheet.
+  taskSheet.clearContents();
+  taskSheet.getRange(1, 1, out.length, out[0].length).setValues(out);
+
+  // Update the 'Current Progress' column in the 'Active Participants' sheet.
+  const allP = partsSheet.getDataRange().getValues();
+  const idxP = allP[0].reduce((m,h,i)=>(m[h]=i,m), {});
+  for (let i = 1; i < allP.length; i++) {
+    const id = String(allP[i][idxP[COL_PTID]] || "").trim();
+    if (!id) continue;
+    const prog = progressMap[id] || { doneCount: 0, totalCount: 0 };
+    const pct = prog.totalCount ? prog.doneCount / prog.totalCount : 0; // Calculate percentage.
+    partsSheet.getRange(i + 1, colProgress).setValue(pct).setNumberFormat("0%");
+  }
+
+  // ---
+  // FINAL SUMMARY
+  // ---
+  if (ui) {
+    ss.toast(`Fetched ${totalTasks} tasks and updated ${Object.keys(progressMap).length} students.`, 'Fetch Complete', 5);
+  }
+  Logger.log(`Fetched ${totalTasks} tasks and updated progress for ${Object.keys(progressMap).length} students.`);
+}
+
+// CheckedOffTasks.gs
+/**
+ * Checks if students have completed any tasks in their "Checklist" sheet.
+ * For each participant who attended the program, this function opens their
+ * individual planner, scans the "Done?" column in their checklist, and if
+ * any task is checked off, it marks a corresponding "Checked Off Tasks"
+ * column as TRUE in the main participants sheet.
+ */
+function markCheckedOffTasks() {
+  // ---
+  // INITIAL SETUP & VALIDATION
+  // Access the main spreadsheet and the participants sheet.
+  // ---
+  const ss = SpreadsheetApp.getActive();
+  const partsSheet = ss.getSheetByName(ALL_PARTICIPANTS_SHEET);
+  if (!partsSheet) {
+    Logger.log(`ERROR: Missing sheet "${ALL_PARTICIPANTS_SHEET}".`);
+    return;
+  }
+
+  // ---
+  // HEADER MAPPING & VALIDATION
+  // Find the column numbers for the data we need by reading the header row.
+  // This makes the script work even if columns are rearranged.
+  // ---
+  const lastColP = partsSheet.getLastColumn();
+  const headerRowP = partsSheet.getRange(HEADER_ROW, 1, 1, lastColP).getValues()[0];
+  const pIndex = {};
+  headerRowP.forEach((h, i) => (pIndex[h] = i + 1));
+
+  // Get the column numbers for the required fields.
+  const colPtid = pIndex[COL_PTID];
+  const colPlanner = pIndex[COL_PLANNER];
+  const colAttended = pIndex[COL_ATTENDED];
+  const colCheckedTasks = pIndex[COL_CHECKED_TASKS];
+
+  // Verify that all required columns were found in the participants sheet.
+  if (!colPtid || !colPlanner || !colAttended || !colCheckedTasks) {
+    Logger.log(`ERROR: A required header is missing in "${ALL_PARTICIPANTS_SHEET}".`);
+    return;
+  }
+
+  // ---
+  // MAIN PROCESSING LOOP: ITERATE THROUGH EACH PARTICIPANT
+  // ---
+  const lastPRow = partsSheet.getLastRow();
+  if (lastPRow < DATA_START_ROW) {
+    Logger.log("INFO: No participants found to process.");
+    return;
+  }
+
+  for (let rowNum = DATA_START_ROW; rowNum <= lastPRow; rowNum++) {
+    const ptid = partsSheet.getRange(rowNum, colPtid).getValue();
+    const attended = partsSheet.getRange(rowNum, colAttended).getValue();
+    const plannerUrl = partsSheet.getRange(rowNum, colPlanner).getValue();
+
+    // Skip this participant if they didn't attend or don't have a planner link.
+    if (attended !== true || !plannerUrl) {
+      partsSheet.getRange(rowNum, colCheckedTasks).setValue(false); // Default to FALSE.
+      continue;
+    }
+
+    // ---
+    // OPEN STUDENT PLANNER & FIND CHECKLIST
+    // This section safely opens the student's planner and navigates to the checklist sheet.
+    // ---
+    let stSS;
+    try {
+      stSS = SpreadsheetApp.openByUrl(plannerUrl);
+    } catch (e) {
+      Logger.log(`ERROR: Cannot open planner for PTID ${ptid}: ${e}`);
+      partsSheet.getRange(rowNum, colCheckedTasks).setValue(false);
+      continue;
+    }
+    const checklistSheet = stSS.getSheetByName(PLANNER_CHECKLIST_SHEET);
+    if (!checklistSheet) {
+      Logger.log(`INFO: No sheet named "${PLANNER_CHECKLIST_SHEET}" for PTID ${ptid}.`);
+      partsSheet.getRange(rowNum, colCheckedTasks).setValue(false);
+      continue;
+    }
+
+    // ---
+    // LOCATE THE 'DONE?' COLUMN IN THE STUDENT'S CHECKLIST
+    // Dynamically finds the header row and then the "Done?" column within it.
+    // ---
+    const allValues = checklistSheet.getDataRange().getValues();
+    const headerRowIdx = allValues.findIndex(r => r.some(c => String(c || "").trim().toLowerCase() === PLANNER_COL_ID.toLowerCase()));
+
+    if (headerRowIdx === -1) {
+      Logger.log(`ERROR: Could not find header row with "${PLANNER_COL_ID}" for PTID ${ptid}.`);
+      partsSheet.getRange(rowNum, colCheckedTasks).setValue(false);
+      continue;
+    }
+
+    const hdrValues = allValues[headerRowIdx];
+    const colDoneIdx = hdrValues.findIndex(h => String(h || "").trim() === PLANNER_COL_DONE);
+
+    if (colDoneIdx === -1) {
+      Logger.log(`ERROR: No column named "${PLANNER_COL_DONE}" for PTID ${ptid}.`);
+      partsSheet.getRange(rowNum, colCheckedTasks).setValue(false);
+      continue;
+    }
+
+    // ---
+    // SCAN FOR ANY COMPLETED TASKS
+    // Check all rows below the header in the "Done?" column for a TRUE value.
+    // ---
+    let anyChecked = false;
+    // Start scanning from the row immediately after the header.
+    for (let r = headerRowIdx + 1; r < allValues.length; r++) {
+      const val = allValues[r][colDoneIdx];
+      // A task is considered checked if the cell contains a boolean TRUE, the number 1, or the text "true".
+      if (val === true || val === 1 || String(val || "").trim().toLowerCase() === "true") {
+        anyChecked = true;
+        break; // We found one, no need to check the rest.
+      }
+    }
+
+    // ---
+    // WRITE THE RESULT
+    // Update the "Checked Off Tasks" column in the main participants sheet.
+    // ---
+    Logger.log(`Setting "Checked Off Tasks" for PTID ${ptid} to: ${anyChecked}`);
+    partsSheet.getRange(rowNum, colCheckedTasks).setValue(anyChecked);
+  }
+
+  Logger.log("✅ markCheckedOffTasks completed.");
+}
+
+// SendWeeklyNudge.gs
+// =============================================================================
+//                        Career Sprint: Weekly Nudge Script
+// =============================================================================
+
+// ---
+// SCRIPT-WIDE CONSTANTS & UTILITIES
+// ---
+const SENDER_NAME = 'Career Sprint Team'; // The "From" name that recipients will see.
+const REPLY_TO = 'bottomlinesuccesscareers@gmail.com'; // The email address for replies.
+
+/**
+ * Replaces emoji characters in an HTML string with their corresponding
+ * HTML entity codes to ensure they display correctly in emails.
+ * @param {string} html The HTML content as a string.
+ * @return {string} The HTML with emojis replaced.
+ */
+function replaceEmojis(html) {
+  return html
+    .split("🎯").join("&#x1F3AF;")
+    .split("💬").join("&#x1F4AC;")
+    .split("🧠").join("&#x1F9E0;")
+    .split("💡").join("&#x1F4A1;")
+    .split("🏃").join("&#x1F3C3;");
+}
+
+
+// ---
+// MAIN ENTRY POINT: SEND WEEKLY NUDGE EMAIL
+// ---
+
+/**
+ * Sends personalized weekly "nudge" emails to active students. The script
+ * checks the 'Outreach Plan' to see if any emails are scheduled for today.
+ * If so, it gathers each student's incomplete tasks, groups them into
+ * "Due this week," "Overdue," and "Upcoming," and sends a customized
+ * email with this information.
+ */
+function sendWeeklyNudge() {
+  Logger.log('Starting sendWeeklyNudge…');
+
+  // ---
+  // SETUP & INITIALIZATION
+  // Get the active spreadsheet, determine the current date, and prepare for processing.
+  // ---
+  const ss = SpreadsheetApp.getActive();
+  const tz = ss.getSpreadsheetTimeZone();
+  const today = new Date();
+  const todayS = Utilities.formatDate(today, tz, 'M/d/yyyy'); // Format today's date as "M/d/yyyy" for comparison.
+  Logger.log(`Today's Date: ${todayS}`);
+
+  // ---
+  // BUILD RESOURCE MAP
+  // Create a quick lookup map from the 'Resource Map' sheet. This allows the script
+  // to easily find and attach relevant resource links (like guides or tools) to specific tasks.
+  // The key is the Task ID, and the value is an array of resource objects.
+  // ---
+  const resSheet = ss.getSheetByName(RESOURCE_MAP_SHEET);
+  const allRes = resSheet.getDataRange().getValues();
+  const resHdr = allRes.shift().map(h => String(h || '').trim());
+  const rIdx = resHdr.reduce((map, h, i) => ((map[h] = i), map), {});
+  const resourceMap = {};
+
+  allRes.forEach(row => {
+    const id = String(row[rIdx[COL_TASK_ID]] || '').trim().toLowerCase();
+    if (!id) return;
+    resourceMap[id] = resourceMap[id] || [];
+    resourceMap[id].push({
+      text: row[rIdx[COL_BUTTON_TEXT]] || '',
+      description: row[rIdx[COL_DESCRIPTION]] || '',
+      url: row[rIdx[COL_RESOURCE_URL]] || ''
+    });
+  });
+
+  // ---
+  // LOAD ALL TASK DATA
+  // For efficiency, load all rows from the 'Task Data' sheet into memory at once.
+  // ---
+  const tdSheet = ss.getSheetByName(TASKS_TEST_SHEET); // Note: Using test data sheet.
+  const tdValues = tdSheet.getDataRange().getValues();
+  const tdHdr = tdValues.shift();
+  const tIdx = tdHdr.reduce((map, h, i) => ((map[h] = i), map), {});
+
+  // ---
+  // BUILD ACTIVE STUDENT LIST
+  // Create a list of all current students who are eligible to receive emails.
+  // This is stored in a map for easy access by PTID.
+  // ---
+  const pSheet = ss.getSheetByName(PARTICIPANTS_TEST_SHEET); // Note: Using test participants sheet.
+  const pVals = pSheet.getDataRange().getValues();
+  const pHdr = pVals.shift();
+  const pIdx = pHdr.reduce((map, h, i) => ((map[h] = i), map), {});
+  if (pIdx[COL_JOB_SECURED] == null) throw new Error(`Missing column "${COL_JOB_SECURED}"`);
+
+  const students = {};
+  pVals.forEach((row, i) => {
+    const ptid = String(row[pIdx[COL_PTID]] || '').trim();
+    if (ptid && row[pIdx[COL_EMAIL]]) {
+      students[ptid] = {
+        ptid,
+        row: DATA_START_ROW + i,
+        email: row[pIdx[COL_EMAIL]],
+        name: row[pIdx[COL_FIRST_NAME]],
+        link: row[pIdx[COL_PLANNER]],
+        hasJobSecured: row[pIdx[COL_JOB_SECURED]] === true
+      };
+    }
+  });
+
+  // ---
+  // FIND EMAIL PLANS SCHEDULED FOR TODAY
+  // Filter the 'Outreach Plan' to get only the rows where the "Send Date" matches today.
+  // ---
+  const opSheet = ss.getSheetByName(OUTREACH_PLAN_SHEET);
+  const opVals = opSheet.getDataRange().getValues();
+  const opHdr = opVals.shift();
+  const oIdx = opHdr.reduce((map, h, i) => ((map[h] = i), map), {});
+  const plans = opVals.filter(r => {
+    const sd = r[oIdx[COL_SEND_DATE]];
+    const s = sd instanceof Date ? Utilities.formatDate(sd, tz, 'M/d/yyyy') : String(sd || '').trim();
+    return s === todayS;
+  });
+
+  if (!plans.length) {
+    Logger.log('No outreach plans scheduled for today. Exiting.');
+    return;
+  }
+
+  // ---
+  // PREPARE OUTREACH LOG
+  // ---
+  const logSheet = ss.getSheetByName(OUTREACH_LOG_SHEET);
+
+  // ---
+  // MAIN LOOP: PROCESS EACH SCHEDULED PLAN
+  // ---
+  plans.forEach(plan => {
+    const tplName = plan[oIdx[COL_TEMPLATE]]; // e.g., "Sprint1Week2"
+    const rawSub = plan[oIdx[COL_SUBJECT_LINE]];
+    const emailSub = `=?utf-8?B?${Utilities.base64Encode(Utilities.newBlob(rawSub).getBytes())}?=`; // Encode subject for special characters.
+
+    // Dynamically find the correct "Sent" column (e.g., "S1W2_SENT") based on the template name.
+    const m = tplName.match(/^Sprint(\d+)Week(\d+)$/);
+    if (!m) throw new Error(`Template name "${tplName}" is not in the required "Sprint#Week#" format.`);
+    const sentColName = `S${m[1]}W${m[2]}_SENT`;
+    const sentColIdx = pIdx[sentColName];
+    if (sentColIdx == null) throw new Error(`Column "${sentColName}" not found in Participants sheet.`);
+
+    let sendCount = 0, skipCount = 0;
+
+    // ---
+    // INNER LOOP: PROCESS EACH STUDENT FOR THIS PLAN
+    // ---
+    Object.values(students).forEach(s => {
+      // Skip students who have already received this email or have secured a job.
+      const alreadySent = pSheet.getRange(s.row, sentColIdx + 1).getValue() === true;
+      if (alreadySent || s.hasJobSecured) {
+        skipCount++;
+        return;
+      }
+
+      // Filter the master task list to get only the incomplete tasks for this specific student.
+      const studentTasks = tdValues.filter(r => String(r[tIdx[COL_PTID]] || '').trim() === s.ptid && r[tIdx[COL_DONE]] !== true);
+
+      // Group tasks that are due this week, grouping them by deadline date.
+      const TaskGroups = {};
+      studentTasks.filter(r => String(r[tIdx[COL_DUE_THIS_WEEK]] || '').toLowerCase() === 'yes' && r[tIdx[COL_DEADLINE]])
+        .forEach(r => {
+          const dl = new Date(r[tIdx[COL_DEADLINE]]);
+          const label = 'By ' + Utilities.formatDate(dl, tz, 'EEEE, MMMM d');
+          const id = String(r[tIdx[COL_TASK_ID]] || '').toLowerCase();
+          TaskGroups[label] = TaskGroups[label] || [];
+          TaskGroups[label].push({ task: String(r[tIdx[COL_TASK]]), resources: resourceMap[id] || [] });
+        });
+
+      // Group tasks that are overdue, grouping them by deadline date.
+      const OverdueGroups = {};
+      studentTasks.filter(r => String(r[tIdx[COL_OVERDUE]] || '').toLowerCase() === 'yes' && r[tIdx[COL_DEADLINE]])
+        .forEach(r => {
+          const dl = new Date(r[tIdx[COL_DEADLINE]]);
+          const label = 'Deadline was: ' + Utilities.formatDate(dl, tz, 'EEEE, MMMM d');
+          const id = String(r[tIdx[COL_TASK_ID]] || '').toLowerCase();
+          OverdueGroups[label] = OverdueGroups[label] || [];
+          OverdueGroups[label].push({ task: String(r[tIdx[COL_TASK]]), resources: resourceMap[id] || [] });
+        });
+      
+      // If there are no tasks due or overdue, find the next 3 upcoming tasks to show instead.
+      let NextTasksByDate = {};
+      if (Object.keys(TaskGroups).length === 0 && Object.keys(OverdueGroups).length === 0) {
+        const futureTasks = studentTasks.filter(r => {
+            const dl = new Date(r[tIdx[COL_DEADLINE]]);
+            return dl instanceof Date && !isNaN(dl) && dl > today;
+          })
+          .sort((a, b) => new Date(a[tIdx[COL_DEADLINE]]) - new Date(b[tIdx[COL_DEADLINE]]))
+          .slice(0, 3); // Take only the next 3.
+
+        futureTasks.forEach(r => {
+          const dl = new Date(r[tIdx[COL_DEADLINE]]);
+          const label = 'By ' + Utilities.formatDate(dl, tz, 'EEEE, MMMM d');
+          const id = String(r[tIdx[COL_TASK_ID]] || '').toLowerCase();
+          NextTasksByDate[label] = NextTasksByDate[label] || [];
+          NextTasksByDate[label].push({ task: String(r[tIdx[COL_TASK]]), resources: resourceMap[id] || [] });
+        });
+      }
+
+      // ---
+      // RENDER AND SEND THE EMAIL
+      // ---
+      const tpl = HtmlService.createTemplateFromFile(tplName);
+      tpl.FirstName = s.name;
+      tpl.PersonalPlanner = s.link;
+      tpl.TaskGroups = TaskGroups;
+      tpl.OverdueGroups = OverdueGroups;
+      tpl.NextTasksByDate = NextTasksByDate;
+      // Add other static links/variables needed by the template.
+      tpl.JobForm = 'https://forms.gle/ZmdorBEzzRKujqak6';
+      tpl.SlideDeck = "https://tbl500amory.sharepoint.com/:p:/s/CareerResources/EfhIWAosHVNJoFeeTDtuFeMBqmVYncLkbcRhkXh2oxUzAA?e=pSq0ek";
+      tpl.Recording = "https://tbl500amory.sharepoint.com/:v:/s/CareerResources/EYUeYn5ybXNFreqwE37YQisBIaTHwZXetH2uoFek-hS7ew?e=50KST4";
+      tpl.SetUpGuide = "https://docs.google.com/document/d/164tqOLXkTFJOjHDyHA6A4JAFI4NtjBCCgS039pSWYIk/view?usp=sharing";
+      
+      const html = replaceEmojis(tpl.evaluate().getContent());
+      GmailApp.sendEmail(s.email, emailSub, '', {
+        htmlBody: html,
+        name: SENDER_NAME,
+        replyTo: REPLY_TO
+      });
+      sendCount++;
+
+      // ---
+      // LOGGING & CLEANUP
+      // Mark the email as sent in the participants sheet and add an entry to the log.
+      // ---
+      pSheet.getRange(s.row, sentColIdx + 1).setValue(true);
+      logSheet.appendRow([s.ptid, s.email, new Date(), tplName]);
+    });
+
+    Logger.log(`Plan "${tplName}" COMPLETE: Sent ${sendCount} emails, skipped ${skipCount} students.`);
+  });
+}
+
+// Sprint1Week0.html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Post-Grad Job Hunt Kickoff</title>
+
+  <!-- Load Google Fonts: Roboto for body text, Saira Condensed for headers -->
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Saira+Condensed:wght@400;700&display=swap" 
+    rel="stylesheet" 
+  />
+
+  <style>
+    /* ============================================================================
+       GENERAL RESET & BASE STYLES
+       ----------------------------------------------------------------------------
+       Applies to the <html> and <body> elements as well as base typographic rules.
+       ============================================================================ */
+    html, body {
+      margin: 0;
+      padding: 20px;                         /* Outer padding around email container */
+      width: 100%;
+      background-color: #f4f1ee;             /* Pastel-beige page background */
+      font-family: 'Roboto', Arial, sans-serif;
+      color: #333;
+      box-sizing: border-box;                /* Include padding in element width/height */
+    }
+    p, ul, li, em {
+      /* All paragraph, list, and <em> text uses Roboto, 16px, dark gray */
+      font-family: 'Roboto', Arial, sans-serif;
+      font-size: 16px;
+      color: #333;
+    }
+    a {
+      /* All links are teal and bold */
+      color: #166886;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+    strong {
+      /* <strong> remains in Roboto, bold, teal color */
+      font-family: 'Roboto', Arial, sans-serif;
+      font-weight: 700;
+      color: #166886;
+    }
+
+
+    /* ============================================================================
+       CONTAINER & LAYOUT
+       ----------------------------------------------------------------------------
+       The white “card” that holds all email content, centered and responsive.
+       ============================================================================ */
+    .container {
+      width: 600px;
+      max-width: 100%;
+      margin: 0 auto;                         /* Center within outer beige area */
+      background: #fff;                       /* White content background */
+      border-radius: 8px;
+      overflow: hidden;                       /* Round corners clip child elements */
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);   /* Subtle drop shadow */
+    }
+    .content {
+      padding: 32px;                          /* Inner space around content */
+    }
+
+
+    /* ============================================================================
+       1) EMAIL BANNER
+       ----------------------------------------------------------------------------
+       The teal-colored banner at the very top, containing a logo image.
+       ============================================================================ */
+    .email-banner {
+      background-color: #166886;              /* Teal background */
+      padding: 24px;                          /* Space inside banner */
+      text-align: center;                     /* Center the logo image */
+    }
+    .email-banner img {
+      max-width: 180px;                       /* Constrain logo width */
+      height: auto;                           /* Maintain aspect ratio */
+    }
+
+
+    /* ============================================================================
+       2) SECTION HEADERS
+       ----------------------------------------------------------------------------
+       Yellow blocks with teal text, using Saira Condensed for headings.
+       ============================================================================ */
+    .section-header {
+      display: block;
+      background-color: #fff200;              /* Bright yellow background */
+      padding: 12px 16px;                     /* Space inside header */
+      font-family: 'Saira Condensed', Arial, sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #166886;                         /* Teal text */
+      margin: 32px 0 16px;                    /* Vertical spacing before/after */
+      border-radius: 4px;
+      border: 1px solid #f0e6b8;              /* Light yellow border */
+    }
+
+
+    /* ============================================================================
+       3) CHECKLIST STYLES
+       ----------------------------------------------------------------------------
+       Styles for the “This Week’s To-Dos” list with custom checkboxes.
+       ============================================================================ */
+    .checklist-ul {
+      list-style: none;                       /* Remove default bullets */
+      padding: 0;
+      margin: 0;
+    }
+    .checklist-li {
+      display: flex;                          /* Horizontal layout: box + text */
+      align-items: center;                    /* Vertically center the checkbox */
+      gap: 28px;                              /* Space between box and text */
+      margin-bottom: 16px;                    /* Space below each item */
+    }
+    .checklist-box {
+      width: 16px;                     /* Adjust as desired - inner width of the box */
+      height: 16px;                    /* Adjust as desired - inner height of the box */
+      border: 2px solid #555555;       /* Border: thickness, style, color. Try #166886 (your teal) or a dark gray */
+      background-color: #ffffff;       /* Ensures it has a white background */
+      flex-shrink: 0;                  /* Keep this: prevents shrinking */
+      margin-top: 2px;                 /* Optional: tiny adjustment for optical alignment with text if needed */
+      margin-right: 10px; 
+    }
+    .inner-checklist-ul {
+      list-style-type: disc;                  /* Default bullet for nested list */
+      margin: 0 0 0 20px;                     /* Indent nested list */
+      padding-left: 0;
+    }
+    .inner-checklist-ul li {
+      margin-bottom: 6px;                     /* Small gap between nested items */
+    }
+
+    
+    .reminder {
+      margin-top: 16px;                         /* Vertical spacing around reminder */
+      margin-bottom: 16px;  
+      margin-left: 40px;                     /* Indent to align with checklist text */
+      font-style: italic;                     /* Italicize text */
+      font-size: 16px;
+    }
+
+
+    /* ============================================================================
+       4) TIP BOX
+       ----------------------------------------------------------------------------
+       Highlighted box with a light-yellow background and a left accent border.
+       ============================================================================ */
+    .tip-box {
+      display: flex;                          /* Flex to align icon + text */
+      align-items: flex-start;                /* Align icon at top of text */
+      gap: 12px;                              /* Space between icon and text */
+      background-color: #fffbe6;              /* Pale yellow background */
+      border: 1px solid #f0e6b8;              /* Light border to match bg */
+      border-left: 4px solid #ffd700;         /* Yellow accent on left edge */
+      border-radius: 0 8px 8px 0;             /* Rounded corners on right side */
+      padding: 8px 16px 8px 26px;             /* Top/right/bottom/left padding */
+      margin: 10px 0;                         /* Vertical spacing around box */
+      font-family: 'Roboto', Arial, sans-serif;
+      font-size: 16px;
+    }
+
+
+    /* ============================================================================
+       5) RESOURCE BUTTONS (STACKED)
+       ----------------------------------------------------------------------------
+       Vertical stack of small buttons for links (e.g., “Access Your Planner”).
+       ============================================================================ */
+    .resource-buttons {
+      display: block;
+      margin: 24px 0;                         /* Vertical spacing above/below */
+    }
+    .btn-small {
+      background-color: #166886;              /* Teal button background */
+      color: #fff !important;                 /* White text */
+      padding: 8px 16px;                      /* Button padding */
+      border-radius: 4px;                     /* Rounded corners */
+      font-size: 16px;                        /* 16px font size */
+      text-decoration: none !important;       /* Remove underline */
+      display: block;                         /* Make full-width block for stacking */
+      margin-bottom: 12px;                    /* Space between stacked buttons */
+      width: fit-content;                     /* Shrink to content width */
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+
+
+    /* ============================================================================
+       6) ACCOUNTABILITY LIST
+       ----------------------------------------------------------------------------
+       List of accountability tips, simple bullet list styled to match body text.
+       ============================================================================ */
+    .accountability-list {
+      margin: 0 0 16px 20px;                  /* Indent to match checklist style */
+      padding-left: 0;
+      list-style-type: disc;                  /* Default disc bullets */
+    }
+    .accountability-list li {
+      font-family: 'Roboto', Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;                       /* Comfortable line spacing */
+      margin-bottom: 8px;                     /* Gap between items */
+    }
+
+
+    /* ============================================================================
+       7) MAIN BUTTON (COMPLETE THE SURVEY)
+       ----------------------------------------------------------------------------
+       Centered large button at the bottom of the email.
+       ============================================================================ */
+    .button-container {
+      text-align: center;                     /* Center the “Complete the Survey” button */
+      margin: 24px 0;                         /* Vertical spacing above/below */
+    }
+    .button {
+      background-color: #166886;              /* Teal background */
+      color: #fff !important;                 /* White text */
+      padding: 14px 24px;                     /* Button padding */
+      border-radius: 4px;                     /* Rounded corners */
+      text-decoration: none !important;       /* Remove underline */
+      font-size: 16px;
+      display: inline-block;
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+
+
+    /* ============================================================================
+       8) SIGNATURE & P.S.
+       ----------------------------------------------------------------------------
+       Signature section at bottom, with italicized P.S. link.
+       ============================================================================ */
+    .signature {
+      margin-top: 32px;                       /* Space above signature */
+      padding-top: 24px;                      /* Space between content and signature */
+      border-top: 1px solid #eeeeee;          /* Light gray divider */
+    }
+    .signature p {
+      margin: 4px 0;                          /* Small gap between signature lines */
+    }
+    .signature em {
+      font-family: 'Roboto', Arial, sans-serif;
+      font-style: italic;
+      font-size: 15px;
+      color: #555555;                         /* Dark gray for italic P.S. */
+    }
+    .signature em a {
+      color: #166886;                         /* Teal P.S. link */
+      text-decoration: none;
+      font-weight: 700;                       /* Bold link */
+    }
+  </style>
+</head>
+
+<body style="margin:0; padding:0; background-color:#f4f1ee;">
+  <!-- 
+    Outer wrapper ensures a full-width pastel-beige background behind the 
+    white “.container” card, even if the email client shows a gap. 
+  -->
+  <div style="background-color:#f4f1ee; width:100%; padding:20px 0;">
+
+    <!-- =========================================================================
+         MAIN EMAIL CONTAINER
+         ----------------------------------------------------------------------------
+         All visible content lives within this white “card” centered in the viewport.
+         ========================================================================= -->
+    <div class="container">
+
+      <!-- ==============================
+           EMAIL BANNER
+           ----------------------------------------------
+           Top teal bar with centered logo image
+           ============================== -->
+      <div class="email-banner">
+        <img 
+          src="https://drive.google.com/uc?export=view&id=1xHr6e3c0X1iNobUPArXEGHn-Hw68pBQ3" 
+          alt="Logo"
+        >
+      </div>
+
+      <!-- ==============================
+           CONTENT AREA
+           ----------------------------------------------
+           All textual content, lists, and buttons
+           ============================== -->
+      <div class="content">
+        <!-- Greeting -->
+        <p>Hi <?!= FirstName ?>,</p>
+
+        <!-- Introduction Paragraph -->
+        <p>It was great seeing you at the Post-Grad Job Hunt kickoff!</p>
+        <p>Here's the <a href="<?!= SlideDeck ?>" style ="color:#166886">Slide Deck</a> and the <a href="<?!= Recording ?>" style ="color:#166886">Event Recording</a></p>
+        
+        <!-- Highlighted Lead Text -->
+        <p style="font-size:18px; font-weight:700; color:#166886;">
+          You now have a personalized job-search plan. Let's put it in action!
+        </p>
+
+        <!-- Access Your Planner Button -->
+        
+          <div class="resource-buttons">
+            <a href="<?!= PersonalPlannerLink ?>" class="btn-small">Access Your Planner</a>
+          </div>
+
+        <!-- ==============================
+             THIS WEEK’S TO-DOS SECTION
+             ----------------------------------------------
+             Checklist showing tasks for the week
+             ============================== -->
+        <div class="section">
+          <!-- Section Header -->
+          <div class="section-header">🎯 This Week’s To-Dos</div>
+          <p> Sprint 1 starts next week. Here’s how to hit the ground running:</p>
+
+          <!-- Checklist -->
+          <ul class="checklist-ul">
+            <li class="checklist-li">
+              <div class="checklist-box"></div>
+              <div>
+                <strong>Finalize Your Planner.</strong> Assign a <strong>Sprint</strong> and <strong>Deadline</strong> to tasks you didn't get to.
+              </div>
+            </li>
+          </ul>
+          <!-- Reminder inserted between checklist items -->
+          <div class="reminder">
+            <strong>This helps us tell you what to do and how to do it at the right time!</strong> 
+          </div>
+          <ul class="checklist-ul">
+            <li class="checklist-li">
+              <div class="checklist-box"></div>
+              <div>
+                <strong>Add Deadlines to Your Calendar.</strong> They're only effective if you remember them!
+              </div>
+            </li>
+            <li class="checklist-li">
+              <div class="checklist-box"></div>
+              <div>
+                <strong>Set Aside Time to Job Search.</strong> Block 2–3 hours each week to work on your tasks.
+              </div>
+            </li>
+            <li class="checklist-li">
+              <div class="checklist-box"></div>
+              <div>
+                <strong>Get Organized with a Job Tracker.</strong> Find a system to track your day-to-day tasks.
+              </div>
+            </li>
+          </ul>
+
+          <!-- ==============================
+               TIP BOX
+               ----------------------------------------------
+               Highlighted box with a light-yellow background and bold text
+               ============================== -->
+          <div class="tip-box">
+            <!-- Tip Text (all bold) -->
+            <div>
+              <p>
+                  💡 We recommend 
+                  <a href="<?!= Teal ?>" style="color: #166886; text-decoration: none;font-weight: 700;">
+                    <u>Teal’s free Job Tracker</u></a> to help you manage your applications. Watch a video walkthrough of how to use it
+                    <a href = "<?!= TealVideo ?>" style="color: #166886; text-decoration: none;font-weight: 700;">here</a>.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==============================
+             PSYCH TIP OF THE WEEK SECTION
+             ----------------------------------------------
+             Accountability list with bullet points
+             ============================== -->
+        <div class="section">
+          <!-- Section Header -->
+          <div class="section-header">🧠 Psych Tip of the Week: <u>Accountability</u></div>
+
+          <!-- Explanation Paragraph -->
+          <p>Everyone works differently, but we all benefit from some sort of accountability. Choose one of the evidence-based mechanisms below to keep yourself accountable:</p>
+
+          <!-- Accountability Mechanisms List -->
+          <ul class="accountability-list">
+            <li><strong>Find an accountability partner</strong> and schedule regular check-ins</li>
+            <li><strong>Announce your goal publicly</strong> on social media</li>
+            <li><strong>Email a mentor</strong> when you complete a meaningful action step</li>
+            <li><strong>Use calendar invites as reminders</strong> to stay on track with your goals and deadlines.</li>
+            <li><strong>Use a habit tracker</strong> app on your phone</li>
+            <li><strong>Put up sticky note reminders</strong> in places where you look every day.</li>
+          </ul>
+        </div>
+
+        <!-- ==============================
+             FEEDBACK SURVEY SECTION
+             ----------------------------------------------
+             Button prompting user to complete a survey
+             ============================== -->
+        <div class="section">
+          <!-- Section Header -->
+          <div class="section-header">💬 Feedback Survey</div>
+
+          <!-- Survey Invitation Paragraph -->
+          <p>
+            If you weren’t able to complete the survey after the event, please take 1–2 minutes to complete it now. We really appreciate your feedback!
+          </p>
+
+          <!-- “Complete the Survey” Button -->
+          <div class="button-container">
+            <a href="<?!= SurveyButton ?>" class="button">Complete the Survey</a>
+          </div>
+        </div>
+
+        <!-- ==============================
+             SIGNATURE & P.S.
+             ----------------------------------------------
+             Closing signature and P.S. link
+             ============================== -->
+        <div class="signature">
+          <p>Best,</p>
+          <p>The Career Sprint Team</p>
+          <p>
+            <em>
+              P.S. If you accept a job offer at any point during the Sprints, 
+              <a href="<?!= JobForm ?>"><u>let us know here</u></a> so we can celebrate with you and stop sending you outreach!
+            </em>
+          </p>
+        </div>
+      </div>
+    </div> <!-- /.container -->
+  </div> <!-- outer beige wrapper -->
+</body>
+</html>
+
+
+
+// Sprint1Week0NoTasksChecked.html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Post-Grad Job Hunt Kickoff</title>
+
+  <!-- Load Google Fonts: Roboto for body text, Saira Condensed for headers -->
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Saira+Condensed:wght@400;700&display=swap" 
+    rel="stylesheet" 
+  />
+
+  <style>
+    /* ============================================================================
+       GENERAL RESET & BASE STYLES
+       ----------------------------------------------------------------------------
+       Applies to the <html> and <body> elements as well as base typographic rules.
+       ============================================================================ */
+    html, body {
+      margin: 0;
+      padding: 20px;                         /* Outer padding around email container */
+      width: 100%;
+      background-color: #f4f1ee;             /* Pastel-beige page background */
+      font-family: 'Roboto', Arial, sans-serif;
+      color: #333;
+      box-sizing: border-box;                /* Include padding in element width/height */
+    }
+    p, ul, li, em {
+      /* All paragraph, list, and <em> text uses Roboto, 16px, dark gray */
+      font-family: 'Roboto', Arial, sans-serif;
+      font-size: 16px;
+      color: #333;
+    }
+    a {
+      /* All links are teal and bold */
+      color: #166886;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    strong {
+      /* <strong> remains in Roboto, bold, teal color */
+      font-family: 'Roboto', Arial, sans-serif;
+      font-weight: 700;
+      color: #166886;
+    }
+
+
+    /* ============================================================================
+       CONTAINER & LAYOUT
+       ----------------------------------------------------------------------------
+       The white “card” that holds all email content, centered and responsive.
+       ============================================================================ */
+    .container {
+      width: 600px;
+      max-width: 100%;
+      margin: 0 auto;                         /* Center within outer beige area */
+      background: #fff;                       /* White content background */
+      border-radius: 8px;
+      overflow: hidden;                       /* Round corners clip child elements */
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);   /* Subtle drop shadow */
+    }
+    .content {
+      padding: 32px;                          /* Inner space around content */
+    }
+
+
+    /* ============================================================================
+       1) EMAIL BANNER
+       ----------------------------------------------------------------------------
+       The teal-colored banner at the very top, containing a logo image.
+       ============================================================================ */
+    .email-banner {
+      background-color: #166886;              /* Teal background */
+      padding: 24px;                          /* Space inside banner */
+      text-align: center;                     /* Center the logo image */
+    }
+    .email-banner img {
+      max-width: 180px;                       /* Constrain logo width */
+      height: auto;                           /* Maintain aspect ratio */
+    }
+
+
+    /* ============================================================================
+       2) SECTION HEADERS
+       ----------------------------------------------------------------------------
+       Yellow blocks with teal text, using Saira Condensed for headings.
+       ============================================================================ */
+    .section-header {
+      display: block;
+      background-color: #fff200;              /* Bright yellow background */
+      padding: 12px 16px;                     /* Space inside header */
+      font-family: 'Saira Condensed', Arial, sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #166886;                         /* Teal text */
+      margin: 32px 0 16px;                    /* Vertical spacing before/after */
+      border-radius: 4px;
+      border: 1px solid #f0e6b8;              /* Light yellow border */
+    }
+
+
+    /* ============================================================================
+       3) CHECKLIST STYLES
+       ----------------------------------------------------------------------------
+       Styles for the “This Week’s To-Dos” list with custom checkboxes.
+       ============================================================================ */
+    .checklist-ul {
+      list-style: none;                       /* Remove default bullets */
+      padding: 0;
+      margin: 0;
+    }
+    .checklist-li {
+      display: flex;                          /* Horizontal layout: box + text */
+      align-items: center;                    /* Vertically center the checkbox */
+      gap: 20px;                              /* Space between box and text */
+      margin-bottom: 16px;                    /* Space below each item */
+    }
+    .checklist-box {
+      font-size: 20px;                        /* Larger “☐” size */
+      line-height: 1;
+      flex-shrink: 0;                         /* Prevent shrinking when text wraps */
+    }
+    .inner-checklist-ul {
+      list-style-type: disc;                  /* Default bullet for nested list */
+      margin: 0 0 0 20px;                     /* Indent nested list */
+      padding-left: 0;
+    }
+    .inner-checklist-ul li {
+      margin-bottom: 6px;                     /* Small gap between nested items */
+    }
+
+
+    /* ============================================================================
+       4) TIP BOX
+       ----------------------------------------------------------------------------
+       Highlighted box with a light-yellow background and a left accent border.
+       ============================================================================ */
+    .tip-box {
+      display: flex;                          /* Flex to align icon + text */
+      align-items: flex-start;                /* Align icon at top of text */
+      gap: 12px;                              /* Space between icon and text */
+      background-color: #fffbe6;              /* Pale yellow background */
+      border: 1px solid #f0e6b8;              /* Light border to match bg */
+      border-left: 4px solid #ffd700;         /* Yellow accent on left edge */
+      border-radius: 0 8px 8px 0;             /* Rounded corners on right side */
+      padding: 8px 16px 8px 26px;             /* Top/right/bottom/left padding */
+      margin: 10px 0;                         /* Vertical spacing around box */
+      font-family: 'Roboto', Arial, sans-serif;
+      font-size: 16px;
+      font-weight: 700;                       /* Make ALL tip-box text bold */
+    }
+
+
+    /* ============================================================================
+       5) RESOURCE BUTTONS (STACKED)
+       ----------------------------------------------------------------------------
+       Vertical stack of small buttons for links (e.g., “Access Your Planner”).
+       ============================================================================ */
+    .resource-buttons {
+      display: block;
+      margin: 24px 0;                         /* Vertical spacing above/below */
+    }
+    .btn-small {
+      background-color: #166886;              /* Teal button background */
+      color: #fff !important;                 /* White text */
+      padding: 8px 16px;                      /* Button padding */
+      border-radius: 4px;                     /* Rounded corners */
+      font-size: 16px;                        /* 16px font size */
+      text-decoration: none !important;       /* Remove underline */
+      display: block;                         /* Make full-width block for stacking */
+      margin-bottom: 12px;                    /* Space between stacked buttons */
+      width: fit-content;                     /* Shrink to content width */
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+
+
+    /* ============================================================================
+       6) ACCOUNTABILITY LIST
+       ----------------------------------------------------------------------------
+       List of accountability tips, simple bullet list styled to match body text.
+       ============================================================================ */
+    .accountability-list {
+      margin: 0 0 16px 20px;                  /* Indent to match checklist style */
+      padding-left: 0;
+      list-style-type: disc;                  /* Default disc bullets */
+    }
+    .accountability-list li {
+      font-family: 'Roboto', Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;                       /* Comfortable line spacing */
+      margin-bottom: 8px;                     /* Gap between items */
+    }
+
+
+    /* ============================================================================
+       7) MAIN BUTTON (COMPLETE THE SURVEY)
+       ----------------------------------------------------------------------------
+       Centered large button at the bottom of the email.
+       ============================================================================ */
+    .button-container {
+      text-align: center;                     /* Center the “Complete the Survey” button */
+      margin: 24px 0;                         /* Vertical spacing above/below */
+    }
+    .button {
+      background-color: #166886;              /* Teal background */
+      color: #fff !important;                 /* White text */
+      padding: 14px 24px;                     /* Button padding */
+      border-radius: 4px;                     /* Rounded corners */
+      text-decoration: none !important;       /* Remove underline */
+      font-size: 16px;
+      display: inline-block;
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+
+
+    /* ============================================================================
+       8) SIGNATURE & P.S.
+       ----------------------------------------------------------------------------
+       Signature section at bottom, with italicized P.S. link.
+       ============================================================================ */
+    .signature {
+      margin-top: 32px;                       /* Space above signature */
+      padding-top: 24px;                      /* Space between content and signature */
+      border-top: 1px solid #eeeeee;          /* Light gray divider */
+    }
+    .signature p {
+      margin: 4px 0;                          /* Small gap between signature lines */
+    }
+    .signature em {
+      font-family: 'Roboto', Arial, sans-serif;
+      font-style: italic;
+      font-size: 15px;
+      color: #555555;                         /* Dark gray for italic P.S. */
+    }
+    .signature em a {
+      color: #166886;                         /* Teal P.S. link */
+      text-decoration: none;
+      font-weight: 700;                       /* Bold link */
+    }
+  </style>
+</head>
+
+<body style="margin:0; padding:0; background-color:#f4f1ee;">
+  <!-- 
+    Outer wrapper ensures a full-width pastel-beige background behind the 
+    white “.container” card, even if the email client shows a gap. 
+  -->
+  <div style="background-color:#f4f1ee; width:100%; padding:20px 0;">
+
+    <!-- =========================================================================
+         MAIN EMAIL CONTAINER
+         ----------------------------------------------------------------------------
+         All visible content lives within this white “card” centered in the viewport.
+         ========================================================================= -->
+    <div class="container">
+
+      <!-- ==============================
+           EMAIL BANNER
+           ----------------------------------------------
+           Top teal bar with centered logo image
+           ============================== -->
+      <div class="email-banner">
+        <img 
+          src="https://drive.google.com/uc?export=view&id=1xHr6e3c0X1iNobUPArXEGHn-Hw68pBQ3" 
+          alt="Logo"
+        >
+      </div>
+
+      <!-- ==============================
+           CONTENT AREA
+           ----------------------------------------------
+           All textual content, lists, and buttons
+           ============================== -->
+      <div class="content">
+        <!-- Greeting -->
+        <p>Hi <?!= FirstName ?>,</p>
+
+        <!-- Introduction Paragraph -->
+        <p>It was great seeing you at the Post-Grad Job Hunt kickoff! </p>
+        <p>
+          We noticed you haven't checked off any of the tasks in your Career Checklist or assigned them to a sprint or deadline. We won't be able to send you personalized reminders with tools to complete your tasks if we don't know when you want to do them by! 
+        </p>
+
+        <p style="font-weight:700; color:#166886;">
+          To make the most out of the Career Sprint support structures, follow the steps we went over during the Kick-Off to make your job search plan.
+        </p>
+
+        <p>Here's the <a href="<?!= SlideDeck ?>" style ="color:#166886"><u>Slide Deck</u></a> and the <a href="<?!= Recording ?>" style ="color:#166886"><u>Event Recording</u></a> for reference!</p>
+
+        <!-- Access Your Planner Button -->
+        <div class="resource-buttons">
+          <a href="<?!= PersonalPlannerLink ?>" class="btn-small">Access Your Planner</a>
+        </div>
+
+        <!-- ==============================
+             THIS WEEK’S TO-DOS SECTION
+             ----------------------------------------------
+             Checklist showing tasks for the week
+             ============================== -->
+        <div class="section">
+          <!-- Section Header -->
+          <div class="section-header">🎯 This Week’s To-Dos</div>
+          <p> Sprint 1 starts next week. Here’s how to hit the ground running:</p>
+
+          <!-- Checklist -->
+          <ul class="checklist-ul">
+            <li class="checklist-li">
+              <div class="checklist-box">☐</div>
+              <div>
+                <strong>Finalize Your Planner.</strong> Assign every undone task:
+                <ul class="inner-checklist-ul">
+                  <li>A Sprint.</li>
+                  <li>A Deadline.</li>
+                </ul>
+              </div>
+            </li>
+            <li class="checklist-li">
+              <div class="checklist-box">☐</div>
+              <div>
+                <strong>Sync your Deadlines.</strong> Add all your planner deadlines to your personal or school calendar.
+              </div>
+            </li>
+            <li class="checklist-li">
+              <div class="checklist-box">☐</div>
+              <div>
+                <strong>Set Aside Time.</strong> Block 2–3 hours in your calendar each week for your job search (e.g., Tuesdays 4–6 PM).
+              </div>
+            </li>
+            <li class="checklist-li">
+              <div class="checklist-box">☐</div>
+              <div>
+                <strong>Get Organized with a Job Tracker.</strong> Find a system to track your day-to-day tasks.
+              </div>
+            </li>
+          </ul>
+
+          <!-- ==============================
+               TIP BOX
+               ----------------------------------------------
+               Highlighted box with a light-yellow background and bold text
+               ============================== -->
+          <div class="tip-box">
+            <!-- Tip Text (all bold) -->
+            <div>
+              <p>
+                <strong>
+                  💡 We recommend signing up for 
+                  <a href="https://www.tealhq.com/tools/job-tracker">
+                    <u>Teal’s free Job Tracker</u></a> to help you manage your applications. 
+                    Here's a <a href = "https://www.youtube.com/watch?v=PoCDQp2idHc"><u>video walkthrough</u></a> of the tool.
+                </strong>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==============================
+             PSYCH TIP OF THE WEEK SECTION
+             ----------------------------------------------
+             Accountability list with bullet points
+             ============================== -->
+        <div class="section">
+          <!-- Section Header -->
+          <div class="section-header">🧠 Psych Tip of the Week: <u>Accountability</u></div>
+
+          <!-- Explanation Paragraph -->
+          <p>Everyone works differently: find what motivates you. Choose one of these mechanisms to keep yourself accountable:</p>
+
+          <!-- Accountability Mechanisms List -->
+          <ul class="accountability-list">
+            <li><strong>Find an accountability partner</strong> and schedule regular check-ins</li>
+            <li><strong>Announce your goal publicly</strong> on social media</li>
+            <li><strong>Email a mentor</strong> when you complete a meaningful action step</li>
+            <li><strong>Use calendar invites as reminders</strong> to stay on track with your goals and deadlines.</li>
+            <li><strong>Use a habit tracker</strong> app on your phone</li>
+            <li><strong>Put up sticky note reminders</strong> in places where you look every day.</li>
+          </ul>
+        </div>
+
+        <!-- ==============================
+             FEEDBACK SURVEY SECTION
+             ----------------------------------------------
+             Button prompting user to complete a survey
+             ============================== -->
+        <div class="section">
+          <!-- Section Header -->
+          <div class="section-header">💬 Feedback Survey</div>
+
+          <!-- Survey Invitation Paragraph -->
+          <p>
+            If you weren’t able to complete the survey after the event, please take 1–2 minutes to complete it now. We really appreciate your feedback!
+          </p>
+
+          <!-- “Complete the Survey” Button -->
+          <div class="button-container">
+            <a href="<?!= SurveyButton ?>" class="button">Complete the Survey</a>
+          </div>
+        </div>
+
+        <!-- ==============================
+             SIGNATURE & P.S.
+             ----------------------------------------------
+             Closing signature and P.S. link
+             ============================== -->
+        <div class="signature">
+          <p>Best,</p>
+          <p>The Career Sprint Team</p>
+          <p>
+            <em>
+              P.S. If you accept a job offer at any point during the Sprints, 
+              <a href="<?!= JobForm ?>"><u>let us know here</u></a> so we can celebrate with you and stop sending you outreach!
+            </em>
+          </p>
+        </div>
+      </div>
+    </div> <!-- /.container -->
+  </div> <!-- outer beige wrapper -->
+</body>
+</html>
+
+// Sprint1Week0NoChecklist.html
+// === SEND KICKOFF FOLLOW-UP EMAIL ===
+// This function is intended to be run by a time-based trigger.
+function sendKickoffFollowUpEmailNoTasks() {
+  const ss = SpreadsheetApp.getActive();
+
+  // Use constants for sheet names
+  const partsSheet    = ss.getSheetByName(ALL_PARTICIPANTS_SHEET);
+  const outreachSheet = ss.getSheetByName(OUTREACH_PLAN_SHEET);
+
+  if (!partsSheet) {
+    Logger.log(`Error: Missing sheet "${ALL_PARTICIPANTS_SHEET}".`);
+    return;
+  }
+  if (!outreachSheet) {
+    Logger.log(`Error: Missing sheet "${OUTREACH_PLAN_SHEET}".`);
+    return;
+  }
+
+  // 1) Fetch “Sprint1Week0” row from Outreach Plan
+  const outreachLastCol       = outreachSheet.getLastColumn();
+  const outreachSheetHeaders  = outreachSheet.getRange(HEADER_ROW, 1, 1, outreachLastCol).getValues()[0];
+  const subjIdx               = outreachSheetHeaders.indexOf(COL_SUBJECT_LINE);
+  const tplIdx                = outreachSheetHeaders.indexOf(COL_TEMPLATE);
+
+  if (subjIdx === -1 || tplIdx === -1) {
+    let missingCols = [];
+    if (subjIdx === -1) missingCols.push(COL_SUBJECT_LINE);
+    if (tplIdx  === -1) missingCols.push(COL_TEMPLATE);
+    Logger.log(`Error: Missing column(s) "${missingCols.join(', ')}" in sheet "${OUTREACH_PLAN_SHEET}".`);
+    return;
+  }
+
+  const firstDataRowOutreach = DATA_START_ROW;
+  const lastDataRowOutreach  = outreachSheet.getLastRow();
+  let outreachPlanDataRows;
+
+  if (lastDataRowOutreach < firstDataRowOutreach) {
+    Logger.log(`No data found in "${OUTREACH_PLAN_SHEET}".`);
+    outreachPlanDataRows = [];
+  } else {
+    const numDataRowsOutreach = lastDataRowOutreach - firstDataRowOutreach + 1;
+    outreachPlanDataRows = outreachSheet
+      .getRange(firstDataRowOutreach, 1, numDataRowsOutreach, outreachLastCol)
+      .getValues();
+  }
+
+  const planRow = outreachPlanDataRows.find(r => r[tplIdx] === "Couldn'tMakeIt");
+  if (!planRow) {
+    Logger.log('Error: Cannot find template "Sprint1Week0NoTasksChecked" in Outreach Plan.');
+    return;
+  }
+
+  // Encode subject as UTF-8 Base64 to preserve emojis
+  const emailSubjectRaw = planRow[subjIdx];
+  const rawBytes        = Utilities.newBlob(emailSubjectRaw).getBytes();
+  const base64Sub       = Utilities.base64Encode(rawBytes);
+  const emailSubject    = `=?utf-8?B?${base64Sub}?=`;
+
+  // 2) Placeholder links
+  const linkPlaceholders = {
+    SurveyButton: "https://forms.gle/fPuxrEbrmKFpZ4bk9",
+    JobForm:      "https://forms.gle/ZmdorBEzzRKujqak6",
+    SlideDeck:    "https://tbl500amory.sharepoint.com/:p:/s/CareerResources/EfhIWAosHVNJoFeeTDtuFeMBqmVYncLkbcRhkXh2oxUzAA?e=pSq0ek",
+    Recording:    "https://tbl500amory.sharepoint.com/:v:/s/CareerResources/EYUeYn5ybXNFreqwE37YQisBIaTHwZXetH2uoFek-hS7ew?e=50KST4",
+    Teal:         "https://www.tealhq.com/tools/job-tracker",
+    TealVideo:    "https://www.youtube.com/watch?v=PoCDQp2idHc"
+  };
+
+  // 3) Fetch participant data
+  const partsLastCol       = partsSheet.getLastColumn();
+  const partsSheetHeaders  = partsSheet.getRange(HEADER_ROW, 1, 1, partsLastCol).getValues()[0];
+
+  const attendedIdx       = partsSheetHeaders.indexOf(COL_ATTENDED);
+  const jobSecuredIdx     = partsSheetHeaders.indexOf(COL_JOB_SECURED);
+  const plannerLinkIdx    = partsSheetHeaders.indexOf(COL_PLANNER);
+  const emailAddrIdx      = partsSheetHeaders.indexOf(COL_EMAIL);
+  const s1w0SentIdx       = partsSheetHeaders.indexOf(COL_S1W0_SENT);
+  const firstNameIdx      = partsSheetHeaders.indexOf(COL_FIRST_NAME);
+  const checkedTasksIdx   = partsSheetHeaders.indexOf(COL_CHECKED_TASKS);
+
+  const requiredCols = {
+    [COL_ATTENDED]:      attendedIdx,
+    [COL_JOB_SECURED]:   jobSecuredIdx,
+    [COL_PLANNER]:       plannerLinkIdx,
+    [COL_EMAIL]:         emailAddrIdx,
+    [COL_S1W0_SENT]:     s1w0SentIdx,
+    [COL_FIRST_NAME]:    firstNameIdx,
+    [COL_CHECKED_TASKS]: checkedTasksIdx
+  };
+
+  let missingParticipantCols = [];
+  for (const colName in requiredCols) {
+    if (requiredCols[colName] === -1) {
+      missingParticipantCols.push(colName);
+    }
+  }
+  if (missingParticipantCols.length > 0) {
+    Logger.log(`Error: Missing column(s) "${missingParticipantCols.join(', ')}" in sheet "${PARTICIPANTS_TEST_SHEET}".`);
+    return;
+  }
+
+  const firstDataRowParticipant = DATA_START_ROW;
+  const lastDataRowParticipant  = partsSheet.getLastRow();
+  let participantDataRows;
+
+  if (lastDataRowParticipant < firstDataRowParticipant) {
+    Logger.log(`No participants found in "${PARTICIPANTS_TEST_SHEET}".`);
+    participantDataRows = [];
+  } else {
+    const numDataRowsParticipant = lastDataRowParticipant - firstDataRowParticipant + 1;
+    participantDataRows = partsSheet
+      .getRange(firstDataRowParticipant, 1, numDataRowsParticipant, partsLastCol)
+      .getValues();
+  }
+
+  // 4) Loop through each row, check conditions, send, and mark as sent
+  let sendCount = 0;
+  participantDataRows.forEach((rowValues, rowIndex) => {
+    const attended     = rowValues[attendedIdx] === true;
+    const jobSecured   = rowValues[jobSecuredIdx] === true;
+    const plannerLink  = rowValues[plannerLinkIdx];
+    const emailAddr    = rowValues[emailAddrIdx];
+    const alreadySent  = rowValues[s1w0SentIdx] === true;
+    const checkedTasks = rowValues[checkedTasksIdx] === true;
+
+    // Only send if:
+    // • plannerLink & emailAddr are nonempty
+    // • attended = true
+    // • jobSecured = false
+    // • COL_S1W0_SENT = false
+    // • COL_CHECKED_TASKS = false  ← note the change here
+    if (
+      plannerLink &&
+      emailAddr &&
+      attended &&
+      !jobSecured &&
+      !alreadySent &&
+      !checkedTasks
+    ) {
+      const firstName = rowValues[firstNameIdx];
+
+      // Create HTML template
+      const tpl = HtmlService.createTemplateFromFile("Couldn'tMakeIt");
+      tpl.FirstName           = firstName;
+      tpl.PersonalPlannerLink = plannerLink;
+      Object.entries(linkPlaceholders).forEach(([k, v]) => {
+        tpl[k] = v;
+      });
+
+      // Render HTML + replace emojis
+      let htmlBody = tpl.evaluate().getContent();
+      htmlBody = replaceEmojis(htmlBody);
+
+      try {
+        GmailApp.sendEmail(emailAddr, emailSubject, "", {
+          htmlBody: htmlBody,
+          name:     SENDER_NAME,
+          replyTo:  REPLY_TO
+        });
+        sendCount++;
+
+        // Mark COL_S1W0_SENT = true for this row
+        // Column index is 1-based
+        const sheetRowToMark = firstDataRowParticipant + rowIndex;
+        partsSheet.getRange(sheetRowToMark, s1w0SentIdx + 1).setValue(true);
+
+      } catch (e) {
+        Logger.log(`Failed to send to ${emailAddr}: ${e.message}`);
+      }
+    }
+  });
+
+  if (sendCount === 0) {
+    if (participantDataRows.length > 0) {
+      Logger.log("No new participants to email based on current criteria.");
+    } else if (lastDataRowParticipant >= firstDataRowParticipant) {
+      Logger.log("All participants processed or did not meet criteria for this email.");
+    }
+  } else {
+    Logger.log(`Done! Sent to ${sendCount} participants.`);
+  }
+}
+
+
+// Sprint1Week0Couldn'tMakeIt.html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Post-Grad Job Hunt Kickoff</title>
+
+  <!-- Load Google Fonts: Roboto for body text, Saira Condensed for headers -->
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Saira+Condensed:wght@400;700&display=swap" 
+    rel="stylesheet" 
+  />
+
+  <style>
+    /* ============================================================================
+       GENERAL RESET & BASE STYLES
+       ----------------------------------------------------------------------------
+       Applies to the <html> and <body> elements as well as base typographic rules.
+       ============================================================================ */
+    html, body {
+      margin: 0;
+      padding: 20px;                         /* Outer padding around email container */
+      width: 100%;
+      background-color: #f4f1ee;             /* Pastel-beige page background */
+      font-family: 'Roboto', Arial, sans-serif;
+      color: #333;
+      box-sizing: border-box;                /* Include padding in element width/height */
+    }
+    p, ul, li, em {
+      /* All paragraph, list, and <em> text uses Roboto, 16px, dark gray */
+      font-family: 'Roboto', Arial, sans-serif;
+      font-size: 16px;
+      color: #333;
+    }
+    a {
+      /* All links are teal and bold */
+      color: #166886;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    strong {
+      /* <strong> remains in Roboto, bold, teal color */
+      font-family: 'Roboto', Arial, sans-serif;
+      font-weight: 700;
+      color: #166886;
+    }
+
+
+    /* ============================================================================
+       CONTAINER & LAYOUT
+       ----------------------------------------------------------------------------
+       The white “card” that holds all email content, centered and responsive.
+       ============================================================================ */
+    .container {
+      width: 600px;
+      max-width: 100%;
+      margin: 0 auto;                         /* Center within outer beige area */
+      background: #fff;                       /* White content background */
+      border-radius: 8px;
+      overflow: hidden;                       /* Round corners clip child elements */
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);   /* Subtle drop shadow */
+    }
+    .content {
+      padding: 32px;                          /* Inner space around content */
+    }
+
+
+    /* ============================================================================
+       1) EMAIL BANNER
+       ----------------------------------------------------------------------------
+       The teal-colored banner at the very top, containing a logo image.
+       ============================================================================ */
+    .email-banner {
+      background-color: #166886;              /* Teal background */
+      padding: 24px;                          /* Space inside banner */
+      text-align: center;                     /* Center the logo image */
+    }
+    .email-banner img {
+      max-width: 180px;                       /* Constrain logo width */
+      height: auto;                           /* Maintain aspect ratio */
+    }
+
+
+    /* ============================================================================
+       2) SECTION HEADERS
+       ----------------------------------------------------------------------------
+       Yellow blocks with teal text, using Saira Condensed for headings.
+       ============================================================================ */
+    .section-header {
+      display: block;
+      background-color: #fff200;              /* Bright yellow background */
+      padding: 12px 16px;                     /* Space inside header */
+      font-family: 'Saira Condensed', Arial, sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #166886;                         /* Teal text */
+      margin: 32px 0 16px;                    /* Vertical spacing before/after */
+      border-radius: 4px;
+      border: 1px solid #f0e6b8;              /* Light yellow border */
+    }
+
+
+    /* ============================================================================
+       3) CHECKLIST STYLES
+       ----------------------------------------------------------------------------
+       Styles for the “This Week’s To-Dos” list with custom checkboxes.
+       ============================================================================ */
+    .checklist-ul {
+      list-style: none;                       /* Remove default bullets */
+      padding: 0;
+      margin: 0;
+    }
+    .checklist-li {
+      display: flex;                          /* Horizontal layout: box + text */
+      align-items: center;                    /* Vertically center the checkbox */
+      gap: 20px;                              /* Space between box and text */
+      margin-bottom: 16px;                    /* Space below each item */
+    }
+    .checklist-box {
+      font-size: 20px;                        /* Larger “☐” size */
+      line-height: 1;
+      flex-shrink: 0;                         /* Prevent shrinking when text wraps */
+    }
+    .inner-checklist-ul {
+      list-style-type: disc;                  /* Default bullet for nested list */
+      margin: 0 0 0 20px;                     /* Indent nested list */
+      padding-left: 0;
+    }
+    .inner-checklist-ul li {
+      margin-bottom: 6px;                     /* Small gap between nested items */
+    }
+
+
+    /* ============================================================================
+       4) TIP BOX
+       ----------------------------------------------------------------------------
+       Highlighted box with a light-yellow background and a left accent border.
+       ============================================================================ */
+    .tip-box {
+      display: flex;                          /* Flex to align icon + text */
+      align-items: flex-start;                /* Align icon at top of text */
+      gap: 12px;                              /* Space between icon and text */
+      background-color: #fffbe6;              /* Pale yellow background */
+      border: 1px solid #f0e6b8;              /* Light border to match bg */
+      border-left: 4px solid #ffd700;         /* Yellow accent on left edge */
+      border-radius: 0 8px 8px 0;             /* Rounded corners on right side */
+      padding: 8px 16px 8px 26px;             /* Top/right/bottom/left padding */
+      margin: 10px 0;                         /* Vertical spacing around box */
+      font-family: 'Roboto', Arial, sans-serif;
+      font-size: 16px;
+      font-weight: 700;                       /* Make ALL tip-box text bold */
+    }
+
+
+    /* ============================================================================
+       5) RESOURCE BUTTONS (STACKED)
+       ----------------------------------------------------------------------------
+       Vertical stack of small buttons for links (e.g., “Access Your Planner”).
+       ============================================================================ */
+    .resource-buttons {
+      display: block;
+      margin: 24px 0;                         /* Vertical spacing above/below */
+    }
+    .btn-small {
+      background-color: #166886;              /* Teal button background */
+      color: #fff !important;                 /* White text */
+      padding: 8px 16px;                      /* Button padding */
+      border-radius: 4px;                     /* Rounded corners */
+      font-size: 16px;                        /* 16px font size */
+      text-decoration: none !important;       /* Remove underline */
+      display: block;                         /* Make full-width block for stacking */
+      margin-bottom: 12px;                    /* Space between stacked buttons */
+      width: fit-content;                     /* Shrink to content width */
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+
+
+    /* ============================================================================
+       6) ACCOUNTABILITY LIST
+       ----------------------------------------------------------------------------
+       List of accountability tips, simple bullet list styled to match body text.
+       ============================================================================ */
+    .accountability-list {
+      margin: 0 0 16px 20px;                  /* Indent to match checklist style */
+      padding-left: 0;
+      list-style-type: disc;                  /* Default disc bullets */
+    }
+    .accountability-list li {
+      font-family: 'Roboto', Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;                       /* Comfortable line spacing */
+      margin-bottom: 8px;                     /* Gap between items */
+    }
+
+
+    /* ============================================================================
+       7) MAIN BUTTON (COMPLETE THE SURVEY)
+       ----------------------------------------------------------------------------
+       Centered large button at the bottom of the email.
+       ============================================================================ */
+    .button-container {
+      text-align: center;                     /* Center the “Complete the Survey” button */
+      margin: 24px 0;                         /* Vertical spacing above/below */
+    }
+    .button {
+      background-color: #166886;              /* Teal background */
+      color: #fff !important;                 /* White text */
+      padding: 14px 24px;                     /* Button padding */
+      border-radius: 4px;                     /* Rounded corners */
+      text-decoration: none !important;       /* Remove underline */
+      font-size: 16px;
+      display: inline-block;
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+
+
+    /* ============================================================================
+       8) SIGNATURE & P.S.
+       ----------------------------------------------------------------------------
+       Signature section at bottom, with italicized P.S. link.
+       ============================================================================ */
+    .signature {
+      margin-top: 32px;                       /* Space above signature */
+      padding-top: 24px;                      /* Space between content and signature */
+      border-top: 1px solid #eeeeee;          /* Light gray divider */
+    }
+    .signature p {
+      margin: 4px 0;                          /* Small gap between signature lines */
+    }
+    .signature em {
+      font-family: 'Roboto', Arial, sans-serif;
+      font-style: italic;
+      font-size: 15px;
+      color: #555555;                         /* Dark gray for italic P.S. */
+    }
+    .signature em a {
+      color: #166886;                         /* Teal P.S. link */
+      text-decoration: none;
+      font-weight: 700;                       /* Bold link */
+    }
+  </style>
+</head>
+
+<body style="margin:0; padding:0; background-color:#f4f1ee;">
+  <!-- 
+    Outer wrapper ensures a full-width pastel-beige background behind the 
+    white “.container” card, even if the email client shows a gap. 
+  -->
+  <div style="background-color:#f4f1ee; width:100%; padding:20px 0;">
+
+    <!-- =========================================================================
+         MAIN EMAIL CONTAINER
+         ----------------------------------------------------------------------------
+         All visible content lives within this white “card” centered in the viewport.
+         ========================================================================= -->
+    <div class="container">
+
+      <!-- ==============================
+           EMAIL BANNER
+           ----------------------------------------------
+           Top teal bar with centered logo image
+           ============================== -->
+      <div class="email-banner">
+        <img 
+          src="https://drive.google.com/uc?export=view&id=1xHr6e3c0X1iNobUPArXEGHn-Hw68pBQ3" 
+          alt="Logo"
+        >
+      </div>
+
+      <!-- ==============================
+           CONTENT AREA
+           ----------------------------------------------
+           All textual content, lists, and buttons
+           ============================== -->
+      <div class="content">
+        <!-- Greeting -->
+        <p>Hi <?!= FirstName ?>,</p>
+
+        <!-- Introduction Paragraph -->
+        <p>We wanted to follow up with instructions on the Post-Grad Job Hunt Kick-Off to get you set up for a successful job search this summer since you weren't able to make the Kick-Off.</p>
+
+        <p style="font-weight:700; color:#166886;">
+          To make the most out of the Career Sprint support structures, follow the steps we went over during the Kick-Off to make your job search plan.
+        </p>
+
+        <p>Here's the <a href="<?!= SlideDeck ?>" style ="color:#166886"><u>Slide Deck</u></a> and the <a href="<?!= Recording ?>" style ="color:#166886"><u>Event Recording</u></a> to help you!</p>
+
+        <!-- Access Your Planner Button -->
+        <div class="resource-buttons">
+          <a href="<?!= PersonalPlannerLink ?>" class="btn-small">Access Your Planner</a>
+        </div>
+
+        <p>The most important part is making sure to assign sprints and deadlines to all tasks you still haven't done. We also recommend walking through the Fears and Purpose activities to address psychological barriers that can get in your way! </p>
+
+
+        <!-- ==============================
+             THIS WEEK’S TO-DOS SECTION
+             ----------------------------------------------
+             Checklist showing tasks for the week
+             ============================== -->
+        <div class="section">
+          <!-- Section Header -->
+          <div class="section-header">🎯 This Week’s To-Dos</div>
+          <p> Sprint 1 starts next week. Here’s how to hit the ground running:</p>
+
+          <!-- Checklist -->
+          <ul class="checklist-ul">
+            <li class="checklist-li">
+              <div class="checklist-box">☐</div>
+              <div>
+                <strong>Finalize Your Planner.</strong> Assign every undone task:
+                <ul class="inner-checklist-ul">
+                  <li>A Sprint.</li>
+                  <li>A Deadline.</li>
+                </ul>
+              </div>
+            </li>
+            <li class="checklist-li">
+              <div class="checklist-box">☐</div>
+              <div>
+                <strong>Sync your Deadlines.</strong> Add all your planner deadlines to your personal or school calendar.
+              </div>
+            </li>
+            <li class="checklist-li">
+              <div class="checklist-box">☐</div>
+              <div>
+                <strong>Set Aside Time.</strong> Block 2–3 hours in your calendar each week for your job search (e.g., Tuesdays 4–6 PM).
+              </div>
+            </li>
+            <li class="checklist-li">
+              <div class="checklist-box">☐</div>
+              <div>
+                <strong>Get Organized with a Job Tracker.</strong> Find a system to track your day-to-day tasks.
+              </div>
+            </li>
+          </ul>
+
+          <!-- ==============================
+               TIP BOX
+               ----------------------------------------------
+               Highlighted box with a light-yellow background and bold text
+               ============================== -->
+          <div class="tip-box">
+            <!-- Tip Text (all bold) -->
+            <div>
+              <p>
+                <strong>
+                  💡 We recommend signing up for 
+                  <a href="https://www.tealhq.com/tools/job-tracker">
+                    <u>Teal’s free Job Tracker</u></a> to help you manage your applications. 
+                    Here's a <a href = "https://www.youtube.com/watch?v=PoCDQp2idHc"><u>video walkthrough</u></a> of the tool.
+                </strong>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==============================
+             PSYCH TIP OF THE WEEK SECTION
+             ----------------------------------------------
+             Accountability list with bullet points
+             ============================== -->
+        <div class="section">
+          <!-- Section Header -->
+          <div class="section-header">🧠 Psych Tip of the Week: <u>Accountability</u></div>
+
+          <!-- Explanation Paragraph -->
+          <p>Everyone works differently: find what motivates you. Choose one of these mechanisms to keep yourself accountable:</p>
+
+          <!-- Accountability Mechanisms List -->
+          <ul class="accountability-list">
+            <li><strong>Find an accountability partner</strong> and schedule regular check-ins</li>
+            <li><strong>Announce your goal publicly</strong> on social media</li>
+            <li><strong>Email a mentor</strong> when you complete a meaningful action step</li>
+            <li><strong>Use calendar invites as reminders</strong> to stay on track with your goals and deadlines.</li>
+            <li><strong>Use a habit tracker</strong> app on your phone</li>
+            <li><strong>Put up sticky note reminders</strong> in places where you look every day.</li>
+          </ul>
+        </div>
+
+
+        <!-- ==============================
+             SIGNATURE & P.S.
+             ----------------------------------------------
+             Closing signature and P.S. link
+             ============================== -->
+        <div class="signature">
+          <p>Best,</p>
+          <p>The Career Sprint Team</p>
+          <p>
+            <em>
+              P.S. If you accept a job offer at any point during the Sprints, 
+              <a href="<?!= JobForm ?>"><u>let us know here</u></a> so we can celebrate with you and stop sending you outreach!
+            </em>
+          </p>
+        </div>
+      </div>
+    </div> <!-- /.container -->
+  </div> <!-- outer beige wrapper -->
+</body>
+</html>
+
+
+// Sprint1Week1.html
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <title>WeeklyNudge</title>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Saira+Condensed:wght@400;700&display=swap"
+    rel="stylesheet" />
+
+  <style>
+    /* =================================================================================== */
+    /* SECTION 2: THE STYLES (THE "WARDROBE" FOR THE EMAIL)                                */
+    /* This section defines all the colors, fonts, spacing, and layout rules.            */
+    /* =================================================================================== */
+
+    /*———————————————————————————
+      2.1: BASIC PAGE STYLES (The Foundation)
+    ———————————————————————————*/
+    /* These rules apply to the entire HTML document and its main body. */
+    html,
+    body {
+      margin: 0;
+      /* Removes any default empty space from the browser's edges. */
+      padding: 20px;
+      /* Adds 20 pixels of space inside the page edges. */
+      width: 100%;
+      /* Makes the page take up the full available width. */
+      background-color: #f4f1ee;
+      /* Sets a light beige background color for the whole page. */
+      font-family: 'Roboto', Arial, sans-serif;
+      /* Sets the main text font to 'Roboto', with backups. */
+      color: #333;
+      /* Sets the default text color to a dark grey. */
+      box-sizing: border-box;
+      /* Makes sure that padding and borders are included in the element's total size. */
+    }
+
+    /* These rules apply to paragraphs, lists, and italicized text. */
+    p,
+    ul,
+    li,
+    em {
+      font-family: 'Roboto', Arial, sans-serif;
+      /* Re-confirms the main font for these text elements. */
+      font-size: 16px;
+      /* Sets a standard, readable font size. */
+      line-height: 1.6;
+      /* Sets the spacing between lines of text to make them easy to read. */
+      color: #333;
+      /* Sets the text color to dark grey. */
+    }
+
+    /* This rule styles all clickable links. */
+    a {
+      color: #166886;
+      /* Sets the link color to a shade of teal. */
+      font-weight: bold;
+      /* Makes the link text bold. */
+      text-decoration: underline;
+      /* Adds an underline to the link text. */
+    }
+
+    /* This rule styles any text you want to make bold or important. */
+    strong {
+      font-weight: 700;
+      /* Makes the text extra bold. */
+      color: #166886;
+      /* Sets the bold text color to teal. */
+    }
+
+    /*———————————————————————————
+      2.2: LAYOUT AND CONTAINERS
+    ———————————————————————————*/
+    /* This rule styles the main white box that holds all the email content. */
+    .container {
+      width: 600px;
+      /* Sets a fixed width of 600 pixels for the main content box. */
+      max-width: 100%;
+      /* Ensures the box will shrink to fit smaller screens (like phones). */
+      margin: 0 auto;
+      /* Centers the box horizontally on the page. */
+      background: #fff;
+      /* Gives the box a solid white background. */
+      border-radius: 8px;
+      /* Rounds the corners of the box. */
+      overflow: hidden;
+      /* Hides anything that might try to stick out of the rounded corners. */
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      /* Adds a subtle shadow around the box to make it look like it's floating. */
+    }
+
+    /* This rule styles the inner area of the main box. */
+    .content {
+      padding: 32px;
+      /* Adds 32 pixels of empty space (padding) on all sides inside the content area. */
+    }
+
+    /*———————————————————————————
+      2.3: TOP BANNER
+    ———————————————————————————*/
+    /* This rule styles the banner at the very top of the email. */
+    .email-banner {
+      background-color: #166886;
+      /* Sets the banner's background color to teal. */
+      padding: 24px;
+      /* Adds 24 pixels of space inside the banner. */
+      text-align: center;
+      /* Centers everything (like the logo) inside the banner. */
+    }
+
+    /* This rule styles the image inside the top banner. */
+    .email-banner img {
+      max-width: 180px;
+      /* Sets the maximum width of the image to 180 pixels. */
+      height: auto;
+      /* Lets the image's height adjust automatically to keep its shape. */
+    }
+
+    /*———————————————————————————
+      2.4: SECTION HEADERS & BUTTONS
+    ———————————————————————————*/
+    /* This rule styles the yellow headers that announce a new section (e.g., "Tasks Due This Week"). */
+    .section-header {
+      display: block;
+      /* Makes the header take up its own full line. */
+      background-color: #fff200;
+      /* Sets the background color to a bright yellow. */
+      padding: 12px 16px;
+      /* Adds space inside the header (12px on top/bottom, 16px on sides). */
+      font-family: 'Saira Condensed', Arial, sans-serif;
+      /* Uses a different, more condensed font for the header. */
+      font-size: 22px;
+      /* Makes the header text larger. */
+      font-weight: 700;
+      /* Makes the header text bold. */
+      color: #166886;
+      /* Sets the header text color to teal. */
+      margin: 32px 0 16px;
+      /* Adds space outside the header (32px above, 16px below). */
+      border-radius: 4px;
+      /* Slightly rounds the corners of the header. */
+      border: 1px solid #f0e6b8;
+      /* Adds a thin, lighter yellow border around the header. */
+    }
+
+    /* This rule is for the box holding the main button, to give it space. */
+    .button-container {
+      margin: 10px 0;
+      /* Adds 14 pixels of space above and below the button container. */
+    }
+
+    /* This rule styles the main, large clickable button. */
+    .button {
+      background-color: #166886;
+      /* Sets the button's background to teal. */
+      color: #fff !important;
+      /* Sets the button's text color to white (and makes this rule a priority). */
+      padding: 10px 10px;
+      /* Adds 14 pixels of space inside the button on all sides. */
+      border-radius: 15px;
+      /* Rounds the corners of the button. */
+      text-decoration: none !important;
+      /* Removes the underline from the link text (and makes this rule a priority). */
+      font-size: 16px;
+      /* Sets the button's text size. */
+      display: inline-block;
+      /* Helps the button behave like a block (so we can style its size) but sit with other content. */
+      font-family: 'Roboto', Arial, sans-serif;
+      /* Sets the font for the button's text. */
+    }
+
+    /*———————————————————————————
+      2.5: TASK CHECKLIST LAYOUT
+    ———————————————————————————*/
+    /* This rule styles the list that will hold all the to-do items. */
+    .checklist-ul {
+      list-style: none;
+      /* Removes the default bullet points from the list. */
+      padding: 0;
+      /* Removes any default inner spacing. */
+      margin: 0;
+      /* Removes any default outer spacing. */
+    }
+
+    /* This rule styles a single row in the checklist (one to-do item). */
+    .checklist-li {
+      display: flex;
+      /* Arranges the items inside (checkbox, text) side-by-side. */
+      align-items: flex-start;
+      /* Aligns the side-by-side items to the top. */
+      margin-bottom: 24px;
+      /* Adds 24 pixels of space below each checklist item. */
+    }
+
+    /* This rule styles the little empty box for the checklist. */
+    .checklist-box {
+      width: 17px;
+      /* Sets the width of the box. */
+      height: 17px;
+      /* Sets the height of the box. */
+      min-width: 17px;
+      /* Ensures the box never gets smaller than 17px. */
+      border: 2px solid #555555;
+      /* Creates a 2px dark grey border to form the box. */
+      background-color: #fff;
+      /* Gives the box a white background. */
+      box-sizing: border-box;
+      /* Includes the border in the total size calculation. */
+      margin-top: 0;
+      /* Removes any space above the box. */
+      margin-right: 16px;
+      /* Adds 16 pixels of space to the right of the box, pushing the text away. */
+      align-self: flex-start;
+      /* Keeps the box at the top of its container. */
+    }
+
+    /* This rule styles the container for the task's text description. */
+    .task-text {
+      flex: 1;
+      /* Allows the text area to grow and take up all available space next to the checkbox. */
+    }
+
+    /* This rule styles the main title of a task within the checklist. */
+    .task-text>p.task-title {
+      font-size: 18px;
+      /* Makes the task title text slightly larger. */
+      font-weight: 500;
+      /* Makes the task title text a medium bold. */
+      margin: 0 0 16px 0;
+      /* Adds 16 pixels of space below the title. */
+      line-height: 18px;
+      /* Sets the line height to match the font size for a compact look. */
+    }
+
+    /*———————————————————————————
+      2.6: RESOURCES LAYOUT (for links under tasks)
+    ———————————————————————————*/
+    /* This rule styles a row that contains a resource (description and a button). */
+    .resource-row {
+      display: flex;
+      /* Arranges the description and button side-by-side. */
+      align-items: center;
+      /* Vertically centers the description and button with each other. */
+      justify-content: space-between;
+      /* Pushes the description to the left and the button to the right. */
+      padding: 12px 0;
+      /* Adds 12 pixels of space above and below the row. */
+      border-top: 1px solid #eeeeee;
+      /* Adds a thin, light grey line above the row. */
+    }
+
+    /* This rule targets the very first resource row in a list. */
+    .resource-row:first-of-type {
+      border-top: none;
+      /* Removes the top border from the first row. */
+      padding-top: 0;
+      /* Removes the top padding from the first row. */
+    }
+
+    /* This rule styles the description text for a resource. */
+    .resource-desc {
+      font-size: 14px;
+      /* Sets a smaller font size for the description. */
+      color: #555;
+      /* Sets the text color to a medium grey. */
+      flex: 1;
+      /* Allows the description to take up all available space. */
+      margin-right: 16px;
+      /* Adds space between the text and the button next to it. */
+      text-align: left;
+      /* Aligns the text to the left. */
+    }
+
+    /* This rule styles the small buttons found next to resources. */
+    .btn-small {
+      display: inline-flex;
+      /* Allows for flexible alignment of text inside the button. */
+      align-items: center;
+      /* Vertically centers the text inside the button. */
+      justify-content: center;
+      /* Horizontally centers the text inside the button. */
+      text-align: center;
+      /* Double-confirms the text is centered. */
+      white-space: nowrap;
+      /* Prevents the button text from wrapping to a new line. */
+      min-width: 98px;
+      /* Sets a minimum width for the button. */
+      height: 40px;
+      /* Sets a fixed height for the button. */
+      line-height: 40px;
+      /* Helps to vertically center the text in some email clients. */
+      padding: 0 10px;
+      /* Adds 10 pixels of space on the left and right inside the button. */
+      background-color: #fff;
+      /* Sets the button background to white. */
+      color: #166886 !important;
+      /* Sets the button text to teal (makes this rule a priority). */
+      border: 2px solid #166886;
+      /* Adds a 2-pixel solid teal border. */
+      border-radius: 20px;
+      /* Rounds the corners heavily to create a "pill" shape. */
+      font-size: 14px;
+      /* Sets the font size for the button text. */
+      font-family: 'Roboto', Arial, sans-serif;
+      /* Sets the font for the button text. */
+      text-decoration: none !important;
+      /* Removes the underline from the link (makes this rule a priority). */
+    }
+
+    /*———————————————————————————
+      2.7: OTHER STYLES
+    ———————————————————————————*/
+    /* This rule styles the "Due: ..." date labels. */
+    .due-date {
+      font-family: 'Roboto', sans-serif;
+      /* Sets the font. */
+      font-size: 18px;
+      /* Sets a larger font size. */
+      font-weight: 700;
+      /* Makes the text bold. */
+      margin: 24px 0 16px;
+      /* Adds space above and below the date. */
+      color: #166886;
+      /* Sets the text color to teal. */
+    }
+
+    /* This rule styles the bulleted list used for the 'Psych Tip'. */
+    .accountability-list {
+      margin: 0 0 16px 20px;
+      /* Adds space below and to the left (to indent it). */
+      padding-left: 0;
+      /* Removes default padding. */
+      list-style-type: disc;
+      /* Ensures the bullet points are solid circles. */
+    }
+
+    /* This rule styles an individual item in the 'Psych Tip' list. */
+    .accountability-list li {
+      line-height: 1.6;
+      /* Sets the line spacing for readability. */
+      margin-bottom: 8px;
+      /* Adds a little space below each list item. */
+    }
+
+    /* This rule styles the signature block at the bottom of the email. */
+    .signature {
+      margin-top: 32px;
+      /* Adds space above the signature to separate it. */
+      padding-top: 24px;
+      /* Adds space inside, above the signature text. */
+      border-top: 1px solid #eeeeee;
+      /* Adds a thin, light grey dividing line above the signature. */
+    }
+
+    /* This rule styles the paragraphs within the signature. */
+    .signature p {
+      margin: 4px 0;
+      /* Adds a small amount of space above and below each line. */
+    }
+
+    /* This rule styles the italicized "P.S." text in the signature. */
+    .signature em {
+      font-style: italic;
+      /* Makes the text italic. */
+      font-size: 15px;
+      /* Sets the font size. */
+      color: #555555;
+      /* Sets the text color to medium grey. */
+    }
+
+    /* This rule styles the link within the "P.S." text. */
+    .signature em a {
+      color: #166886;
+      /* Sets the link color to teal. */
+      text-decoration: none;
+      /* Removes the underline from the link. */
+      font-weight: 700;
+      /* Makes the link text bold. */
+    }
+  </style>
+</head>
+
+<body style="margin:0; padding:0; background-color:#f4f1ee;">
+
+  <div style="background-color:#f4f1ee; width:100%; padding:20px 0;">
+
+    <div class="container">
+
+      <div class="email-banner">
+        <img src="https://drive.google.com/uc?export=view&id=1xHr6e3c0X1iNobUPArXEGHn-Hw68pBQ3" alt="Logo">
+      </div>
+
+      <div class="content">
+
+        <p>Hi
+          <?!= FirstName ?>,
+        </p>
+        <p>We’re excited to officially kick off this summer’s first Career Sprint.</p>
+
+        <div class="button-container">
+          <a href="<?!= PersonalPlanner ?>" class="button">Your Planner</a>
+        </div>
+
+        <p style="font-size:18px; font-weight:700; color:#166886;">
+          Below are your week’s tasks and tools to complete them.
+        </p>
+
+
+        <div class="section-header">🎯 Tasks Due This Week</div>
+
+        <? if (TaskGroups && Object.keys(TaskGroups).length) { ?>
+        <? Object.keys(TaskGroups).forEach(function(label) { ?>
+        <div class="due-date">
+          <?!= label ?>
+        </div>
+        <ul class="checklist-ul">
+          <? TaskGroups[label].forEach(function(item) { ?>
+          <li class="checklist-li">
+            <div class="checklist-box"></div>
+            <div class="task-text">
+              <?
+              var taskText = item.task || '';
+              var taskIdx  = taskText.indexOf(':');
+              var taskKey  = taskIdx > -1 ? taskText.slice(0, taskIdx) : '';
+              var taskVal  = taskIdx > -1 ? taskText.slice(taskIdx + 1) : taskText;
+            ?>
+              <p class="task-title">
+                <? if (taskKey) { ?>
+                <strong><?!= taskKey ?>:</strong>
+                <?!= taskVal ?>
+                <? } else { ?>
+                <?!= taskVal ?>
+                <? } ?>
+              </p>
+              <? if (item.resources && item.resources.length) { ?>
+              <? item.resources.forEach(function(res) {
+                   var desc = res.description || '';
+                   var idx  = desc.indexOf(':');
+                   var key  = idx > -1 ? desc.slice(0, idx+1) : '';
+                   var val  = idx > -1 ? desc.slice(idx+1) : desc;
+              ?>
+              <div class="resource-row">
+                <div class="resource-desc">
+                  <? if (key) { ?>
+                  <strong><?!= key ?></strong>
+                  <?!= val ?>
+                  <? } else { ?>
+                  <?!= val ?>
+                  <? } ?>
+                </div>
+                <a href="<?!= res.url ?>" class="btn-small">
+                  <?!= res.text ?>
+                </a>
+              </div>
+              <? }); ?>
+              <? } ?>
+            </div>
+          </li>
+          <? }); ?>
+        </ul>
+        <? }); ?>
+        <? } else if (NextTasksByDate && Object.keys(NextTasksByDate).length) { ?>
+        <p><strong>You have no undone tasks with a deadline assigned to this week!</strong></p>
+        <p>To get ahead, try working on completing the tasks coming up next.</p>
+        <? Object.keys(NextTasksByDate).forEach(function(label) { ?>
+        <div class="due-date">
+          <?!= label ?>
+        </div>
+        <ul class="checklist-ul">
+          <? NextTasksByDate[label].forEach(function(item) { ?>
+          <li class="checklist-li">
+            <div class="checklist-box"></div>
+            <div class="task-text">
+              <?
+              var taskText = item.task || '';
+              var taskIdx  = taskText.indexOf(':');
+              var taskKey  = taskIdx > -1 ? taskText.slice(0, taskIdx) : '';
+              var taskVal  = taskIdx > -1 ? taskText.slice(taskIdx + 1) : taskText;
+            ?>
+              <p class="task-title">
+                <? if (taskKey) { ?>
+                <strong><?!= taskKey ?>:</strong>
+                <?!= taskVal ?>
+                <? } else { ?>
+                <?!= taskVal ?>
+                <? } ?>
+              </p>
+              <? if (item.resources && item.resources.length) { ?>
+              <? item.resources.forEach(function(res) {
+                   var desc = res.description || '';
+                   var idx  = desc.indexOf(':');
+                   var key  = idx > -1 ? desc.slice(0, idx+1) : '';
+                   var val  = idx > -1 ? desc.slice(idx+1) : desc;
+              ?>
+              <div class="resource-row">
+                <div class="resource-desc">
+                  <? if (key) { ?>
+                  <strong><?!= key ?></strong>
+                  <?!= val ?>
+                  <? } else { ?>
+                  <?!= val ?>
+                  <? } ?>
+                </div>
+                <a href="<?!= res.url ?>" class="btn-small">
+                  <?!= res.text ?>
+                </a>
+              </div>
+              <? }); ?>
+              <? } ?>
+            </div>
+          </li>
+          <? }); ?>
+        </ul>
+        <? }); ?>
+        <? } else { ?>
+        <p style="color:#8B0000; font-size:18px; font-weight:700; margin-bottom:16px;">
+          No undone tasks in your planner have deadlines.
+        </p>
+        <p style="font-size:16px; margin-bottom:0;">
+          Each task needs to have a deadline for us to send you resources and keep you on track.
+        </p>
+        <ol style="margin:0 0 16px 20px; padding:0; font-size:16px; line-height:1.5;">
+          <li><strong style="font-weight:500;">Open your planner now.</strong> Click "Your Planner” at the top of this
+            email.</li>
+          <li><strong style="font-weight:500;">Review undone tasks.</strong> Look for any items without a deadline.</li>
+          <li><strong style="font-weight:500;">Assign a Sprint and Deadline</strong> to each task — this is the only way
+            we can send you tailored reminders and tools.</li>
+        </ol>
+        <p style="font-size:16px; margin-bottom:0;">
+          Use the Guide below to make sure you set up all parts of your Planner.
+        </p>
+        <div class="button-container">
+          <a href="<?!= SetUpGuide ?>" class="button">Set-Up Guide</a>
+        </div>
+        <p>
+          Here's the <a href="<?!= SlideDeck ?>" style="color:#166886; font-weight:500;"><u>Slide Deck</u></a>
+          and the <a href="<?!= Recording ?>" style="color:#166886; font-weight:500;"><u>Kick-Off Recording</u></a>
+          if you prefer a more interactive walkthrough.
+        </p>
+        <? } ?>
+
+        <? if ((TaskGroups && Object.keys(TaskGroups).length) || (NextTasksByDate && Object.keys(NextTasksByDate).length)) { ?>
+        <div class="section-header">⏰ Overdue Tasks</div>
+        <? if (OverdueGroups && Object.keys(OverdueGroups).length) { ?>
+        <? Object.keys(OverdueGroups).forEach(function(label) { ?>
+        <div class="due-date">
+          <?!= label ?>
+        </div>
+        <ul class="checklist-ul">
+          <? OverdueGroups[label].forEach(function(item) { ?>
+          <li class="checklist-li">
+            <div class="checklist-box"></div>
+            <div class="task-text">
+              <?
+                var taskText = item.task || '';
+                var idx      = taskText.indexOf(':');
+                var key      = idx > -1 ? taskText.slice(0, idx) : '';
+                var val      = idx > -1 ? taskText.slice(idx + 1) : taskText;
+              ?>
+              <p class="task-title">
+                <? if (key) { ?>
+                <strong><?!= key ?>:</strong>
+                <?!= val ?>
+                <? } else { ?>
+                <?!= val ?>
+                <? } ?>
+              </p>
+              <? if (item.resources && item.resources.length) { ?>
+              <? item.resources.forEach(function(res) {
+                   var d = res.description || '';
+                   var i = d.indexOf(':');
+                   var k = i > -1 ? d.slice(0, i+1) : '';
+                   var v = i > -1 ? d.slice(i+1) : d;
+                ?>
+              <div class="resource-row">
+                <div class="resource-desc">
+                  <? if (k) { ?>
+                  <strong><?!= k ?></strong>
+                  <?!= v ?>
+                  <? } else { ?>
+                  <?!= v ?>
+                  <? } ?>
+                </div>
+                <a href="<?!= res.url ?>" class="btn-small">
+                  <?!= res.text ?>
+                </a>
+              </div>
+              <? }); ?>
+              <? } ?>
+            </div>
+          </li>
+          <? }); ?>
+        </ul>
+        <? }); ?>
+        <? } else { ?>
+        <p><strong>Great work! You're all caught up and have no overdue tasks.</strong></p>
+        <p>That means you're on track! Keep up the momentum by completing any tasks you have due this week.</p>
+        <? } ?>
+        <? } ?>
+
+
+        <div class="section-header">🧠 Psych Tip of the Week: <u>Fresh Starts</u></div>
+        <p>Ever noticed the gym seems busier on Monday, January, and the start of a new season?
+          <a href="https://faculty.wharton.upenn.edu/wp-content/uploads/2014/06/Dai_Fresh_Start_2014_Mgmt_Sci.pdf"
+            style="color: #166886; font-weight: normal;">
+            Studies find we’re 30% more likely</a>
+          to follow through on goals we set right after a new week, month, or birthday.
+        </p>
+
+        <p>These moments are called “fresh starts”: Starting strong will help you stick to your job search so don’t let
+          this fresh start go to waste!</p>
+
+        <p><strong>Every Monday morning, try taking 10 minutes to:</strong></p>
+        <ul class=" accountability-list">
+          <li>Review the week's goals and any overdue tasks in your Planner.</li>
+          <li>Plan when you’ll do each task using the time blocks you set aside to work on your job search.</li>
+          <li>Add a note to calendar events with the tasks you plan to complete during each workblock.</li>
+        </ul>
+
+
+        <div class="signature">
+          <p>Best,</p>
+          <p>The Career Sprint Team</p>
+          <p>
+            <em>
+              P.S. If you accept a job offer at any point during the Sprints, 
+              <a href="<?!= JobForm ?>"><u>let us know here</u></a> so we can celebrate with you and stop sending you outreach!
+            </em>
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
+
+
+
+
+    
