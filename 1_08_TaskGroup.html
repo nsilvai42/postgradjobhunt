@@ -1,0 +1,10 @@
+<!-- 1_08_TaskGroup.html -->
+<div class="section-subheader">
+  <?!= groupLabel ?>:
+</div>
+
+<ul class="checklist-ul">
+  <? tasksInGroup.forEach(function(item) { ?>
+    <?!= include('SingleTaskItem', { item: item }) ?>
+  <? }); ?>
+</ul>
