@@ -1,0 +1,100 @@
+<!-- 2_08_S1Wk3_Disengaged.html -->
+
+<p>Hi
+  <?!= firstName ?>,
+</p>
+
+<p>Niko from the Career Sprint Team here. I'm reaching out personally because
+  <? if (cluster === "Gatherers") { ?> I remembered you couldn't make the kickoff (life happens!), but said you wanted
+  to join the hunt.
+  <? } ?> I noticed your planner hasn’t been updated in a bit and I want to make sure you have everything you need to
+  achieve your goals this summer.
+</p>
+
+<p> You mentioned a while ago that you
+  <?!= kickoffJobStage ?> - <strong>Is that still accurate?</strong>
+</p>
+
+<p><strong>To send you the <em>right resources</em> at the <em>right time</em></strong> and make sure you have access to
+  the tools all the other grads have been receiving:</p>
+<ol>
+  <li>I took some time to identify the highest-impact tasks you could get started on and</li>
+  <li>I went ahead and set some initial deadlines in your planner for them.</li>
+</ol>
+
+<p>
+  <strong><a href="<?!= careerPlanner ?>" class="btn btn-solid btn-large">Your planner</a> is fully in your control</strong>!
+  The dates are just a suggestion, and you can change them at any time.
+</p>
+
+<?
+// 1) Flatten in priority order AND ATTACH THE DUE DATE
+var allItems = [];
+function appendGroup(grp) {
+  for (var label in grp) { // `label` is the due date string, e.g., "Due Friday, June 27"
+    var tasksWithDate = grp[label].map(function(task) {
+      task.dueDateLabel = label; // Attach the label to the task object
+      return task;
+    });
+    allItems = allItems.concat(tasksWithDate);
+  }
+}
+appendGroup(OverdueGroups);
+appendGroup(TaskGroups);
+appendGroup(NextTasksByDate);
+
+// 2) Cap at 1 (or more, if you change your mind later)
+allItems = allItems.slice(0, 1);
+?>
+
+  <? allItems.forEach(function(item) { ?>
+    <div style="margin-bottom:12px; color:#1c8a70; font-weight:700">
+      To make easy progress <?!= item.dueDateLabel ?>: <?!= item.task ?>
+    </div>
+
+  <? if (item.resources && item.resources.length) { ?>
+  <li style="margin:0 0 0 10px; list-style:none;">
+    <ul style="padding:0; margin:0;">
+      <? item.resources.forEach(function(res) {
+           var descText = res.description || '';
+           var idx      = descText.indexOf(':');
+           var key      = idx > -1 ? descText.slice(0, idx).trim() : '';
+           var val      = idx > -1 ? descText.slice(idx + 1).trim()    : descText;
+      ?>
+      <li style="margin-bottom:6px; display:flex; align-items:flex-start;">
+        <span style="font-size:16px;">↳</span>
+        <a href="<?!= res.url ?>" style="color:#1c8a70; font-weight:500;">
+          <?!= key || res.text ?>:
+        </a>
+        <? if (val) { ?><span style="margin-left:4px; color:#555;"><?!= val ?></span><? } ?>
+      </li>
+      <? }); ?>
+    </ul>
+  </li>
+  <? } ?>
+
+  <? }); ?>
+</ul>
+
+<p>Already did it? (1) Check it off in your planner. (2) Get ahead by completing upcoming tasks.</p>
+
+<? if (hasPurpose) { ?>
+<p><strong><em>Don't forget why you're doing this</em>: <?!= purpose ?></strong>.</p>
+<? } else { ?>
+<p>You've already taken the hardest steps - the first ones. Let me know if there’s anything I can do to help you keep
+  going.</p>
+<? } ?>
+
+<p>Best,<br>
+Niko<br>
+  <em>Behavioral Designer | ideas42</em>
+</p>
+
+<p style="border-top: 1px solid #eeeeee; color: #555555; font-style: italic; padding-top: 12px">
+  P.S. If you’ve already accepted a job offer, please ignore this and <a href="<?!= jobForm ?>" target="_blank">let me
+    know</a> so I can tell the team and celebrate!
+</p>
+<p style="color: #555555; font-style: italic;">
+  P.P.S If you feel like you won't benefit from receiving personalized resources, let me know and I’ll take you off our
+  list :) No hard feelings, and we're always here if you need support!
+</p>
