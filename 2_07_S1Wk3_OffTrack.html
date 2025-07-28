@@ -1,0 +1,72 @@
+<!-- 2_07_S1Wk3_OffTrack.html -->
+<p>Hey
+  <?!= firstName ?>,
+</p>
+
+<?!= include('OffTrack_Intro',{cluster}) ?>
+<?!= include('OffTrack_PurposeFear',{firstName,purpose,fear,fearReason, hasPurpose, hasFear}) ?>
+<?!= include('OffTrack_Progress',{stageData: {pctExploreDone,pctResearchDone,pctApplyDone,pctStrategizeDone,nExploreLeft,nResearchLeft,nApplyLeft,nStrategizeLeft,highlightProgress:true},pctExploreDone,pctResearchDone,pctApplyDone,pctStrategizeDone,nExploreLeft,nResearchLeft,nApplyLeft,nStrategizeLeft,highlightProgress:true}) ?>
+Let's forget the career checklist for a bit and instead focus a few key key tasks to choose from.</p>
+
+<p style="color: #cc0100; font-weight: 700; margin-bottom: 0;">
+  Choose one—and it can be the easiest—task from this list and try to tackle it this week:
+</p>
+<?
+// 1) Flatten in priority order: Overdue, DueThisWeek, Upcoming
+var allItems = [];
+function appendGroup(grp) {
+  for (var lbl in grp) {
+    allItems = allItems.concat(grp[lbl]);
+  }
+}
+appendGroup(OverdueGroups);
+appendGroup(TaskGroups);
+appendGroup(NextTasksByDate);
+
+// 2) Cap at 4
+allItems = allItems.slice(0, 3);
+?>
+
+<ul>
+  <? allItems.forEach(function(item) { ?>
+    <li>
+      <strong><?!= item.task ?></strong>
+      <? if (item.resources && item.resources.length) { ?>
+        <ul>
+          <? item.resources.forEach(function(res) {
+               var descText       = res.description || '';
+               var descColonIndex = descText.indexOf(':');
+               var descKey        = descColonIndex > -1
+                                     ? descText.slice(0, descColonIndex).trim()
+                                     : '';
+               var descValue      = descColonIndex > -1
+                                     ? descText.slice(descColonIndex + 1).trim()
+                                     : descText;
+          ?>
+            <li>
+              <a href="<?!= res.url ?>"><?!= descKey || res.text ?></a><? if (descValue) { ?>: <?!= descValue ?><? } ?>
+            </li>
+          <? }); ?>
+        </ul>
+      <? } ?>
+    </li>
+  <? }); ?>
+</ul>
+
+
+
+
+<p>Don't forget <a href="<?!= careerPlanner ?>" target="_blank">your Planner</a> has a Resource Center filled with tools
+  to make it even easier to do any and all of these!</p>
+
+<p>You’ve already done the hard work of planning. Please let me know if there’s anything at all I can do to help you
+  conquer this next step.</p>
+
+<p>Best,<br>
+Niko<br>
+  <em>Behavioral Designer | ideas42</em>
+</p>
+
+<p>
+  <em>P.S. If you’ve already accepted a job offer, please ignore this and <a href="<?!= jobForm ?>" target="_blank">let me know</a> so I can tell the team and celebrate! If you don’t think you’ll need the personalized resources, just let me know by replying to this email and I'll take you off of our participant list.</em>
+</p>
