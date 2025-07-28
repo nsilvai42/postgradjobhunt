@@ -1,0 +1,77 @@
+<!-- 2_06_S1Wk3_OnTrack.html -->
+<?!= include('EmailStyles') ?>
+<?!= include('EmailHeader') ?>
+
+<div class="section-text">
+  <p>🎉 Awesome job, <?!= firstName ?>!</p>
+
+<?!= include('OnTrack_Intro', {
+     firstName:          firstName,
+     careerPlanner:      careerPlanner,
+     nChangePrevWeeks:   nChangePrevWeeks,
+     pctChangePrevWeeks: pctChangePrevWeeks,
+     currentProgress:    currentProgress,
+     stageData: {
+       pctExploreDone,   nExploreLeft,
+       pctResearchDone,  nResearchLeft,
+       pctApplyDone,     nApplyLeft,
+       pctStrategizeDone,nStrategizeLeft
+     },
+     highlightProgress: false
+}) ?>
+</div>
+
+<? 
+  var hasDue     = TaskGroups && Object.keys(TaskGroups).length;
+  var hasOverdue = OverdueGroups && Object.keys(OverdueGroups).length;
+  var hasUpcoming= NextTasksByDate && Object.keys(NextTasksByDate).length;
+?>
+<? if(hasDue){ ?>
+  <div class="section-header">🎯 Tasks Due This Week</div>
+  <? Object.keys(TaskGroups).forEach(lbl=>{ ?>
+    <?!= include('TaskGroup',{groupLabel:lbl,tasksInGroup:TaskGroups[lbl]})?>
+  <? });?>
+<? } else if(hasOverdue){ ?>
+  <div class="section-header">⏰ Overdue Tasks</div>
+  <? Object.keys(OverdueGroups).forEach(lbl=>{ ?>
+    <?!= include('TaskGroup',{groupLabel:lbl,tasksInGroup:OverdueGroups[lbl]})?>
+  <? });?>
+<? } else if(hasUpcoming){ ?>
+  <div class="section-header">➡️ Upcoming Tasks</div>
+  <?!= include('UpcomingTasks',{NextTasksByDate})?>
+<? } else { ?>
+  <?!= include('NoDeadlines')?>
+<? } ?>
+
+<div class="section-header">🧠 Psych Tip of the Week: <u>If-Then Plans</u></div>
+
+<div class="section-text">
+  <p>Without a concrete plan, no amount of motivation is enough. The fix is a simple brain hack called an "If-Then Plan" that automates your goals.</p>
+
+  <div class="lead-text teal">
+    <p>Make your plan concrete: <strong>IF</strong> it's <em>4PM on Tuesday</em>, <strong>THEN</strong> I'll <em>write a cover letter template</em>.</p>
+  </div>
+
+  <p>Now, all your brain needs to do is follow the steps (the action) when it sees the trigger (then day and time).
+  </p>
+
+  <p class="lead-text teal" style="margin-top: 24px;">For each of your tasks above:</p>
+
+  <ol class="styled-list">
+
+    <li><strong class="black">Write down a specific day, time, and place you’ll do it. </strong><br>
+      “If it’s Wednesday at 12 PM, and I’ve had lunch at home, I’ll request that informational interview with Contact X.”
+    </li><br>
+
+    <li><strong class="black">Think of what could go wrong—what might ruin that trigger.</strong> <br>
+      “If my friend asks me out to lunch, I might not be at home.”
+    </li><br>
+
+    <li><strong class="black">Brainstorm 1–2 back-up plans in case it does.</strong> <br>
+      “If that happens, I’ll set my alarm for Thursday at 9AM instead of 10AM to do it then.”
+    </li>
+  </ol>
+
+  <p>It might seem simple—but walking people through these plans <strong>more than doubles</strong> their chances of following through on everything from flu shots to job-search tasks.</p>
+
+  <?!= include('EmailFooter') ?>
