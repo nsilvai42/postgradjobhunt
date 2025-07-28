@@ -1,0 +1,155 @@
+<!-- 2_11_S1Wk2.html -->
+
+<?!= include('EmailStyles'); ?>
+<?!= include('EmailHeader'); ?>
+
+<!-- ==================== Greeting Section ==================== -->
+<div class="section-text">
+ 
+  <p class="lead-text teal" style="text-align: center; font-weight:700;font-size:18">How have you been, <?!= firstName ?>?<br>Reflect on your job search, readjust if needed.
+  </p>
+  <div style="text-align: center; margin: 10px 0; width:100%;">
+    <a href="<?!= careerPlanner ?>" style="
+      display: inline-block;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 30px;
+      text-align: center;
+      white-space: nowrap;
+      background-color: #166886;
+      color: #fff200;
+      border: none;
+      padding: 12px 28px;
+      font-size: 18px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.3)';"
+      onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10px rgba(0,0,0,0.2)';">
+      Your Planner
+    </a>
+  </div>
+</div>
+<!-- ==================== Task Sections Flags ==================== -->
+<?
+// Determine which task blocks to render
+var hasDue         = TaskGroups && Object.keys(TaskGroups).length > 0;
+var hasOverdue     = OverdueGroups && Object.keys(OverdueGroups).length > 0;
+var hasUpcoming    = NextTasksByDate && Object.keys(NextTasksByDate).length > 0;
+var hasReschedules = rescheduleList && rescheduleList.length > 0;
+?>
+
+<!-- ==================== Tasks Due This Week Section ==================== -->
+<? if (hasDue) { ?>
+<div class="section-header">🎯 This Week's Tasks</div>
+<? Object.keys(TaskGroups).forEach(function(lbl) { ?>
+<?!= include('TaskGroup', {
+      groupLabel: lbl,
+      tasksInGroup: TaskGroups[lbl],
+      resourceMap: resourceMap
+    }) ?>
+<? }); ?>
+<? } ?>
+
+<!-- ==================== Overdue Tasks Section (merged with reschedules) ==================== -->
+<?
+// build your map as before
+var rescheduleMap = {};
+(rescheduleList||[]).forEach(function(s){
+  rescheduleMap[s.originalDueDateString] = s;
+});
+?>
+
+<? if (hasOverdue) { ?>
+<div class="section-header">⏰ Your Sign To Adjust</div>
+<div class="section-text">
+  <div style="margin-bottom: 24px;">
+    <p style="font-size: 18px; line-height: 1.4; color: #166886; font-weight: 600; margin: 0;">
+      Take 5 minutes. Open your Planner. Realign deadlines.
+    </p>
+  </div>
+</div>
+<? Object.keys(OverdueGroups).forEach(function(lbl) {
+       var dateKey    = lbl.replace(/^Was Due\s*/, '');
+       var suggestion = rescheduleMap[dateKey];
+  ?>
+<div>
+  <div class="section-subheader" style="margin-bottom: 0;">
+    This task was originally due
+    <?!= dateKey ?>:
+  </div>
+
+  <? if (suggestion) { ?>
+  <div style="text-align: right; margin-right: 80px; margin-top: -22px; margin-bottom: 18px;">
+    <div style="
+          display: inline-block; /* This allows the box to be aligned by the parent */
+          text-align: center;
+          background-color: rgba(22,104,134,1);
+          padding: 4px 12px;
+          font-family: 'Saira Condensed', Arial, sans-serif;
+          font-size: 22px;
+          font-weight: 700;
+          color: #FFF200;
+          border-radius: 12px;
+          border: 0;
+        ">
+      Consider rescheduling to
+      <?!= suggestion.newDueDate ?>
+    </div>
+  </div>
+  <? } ?>
+</div>
+
+<ul class="checklist-ul">
+  <? OverdueGroups[lbl].forEach(function(item){ ?>
+  <?!= include('SingleTaskItem',{item:item}) ?>
+  <? }); ?>
+</ul>
+<? }); ?>
+<? } ?>
+
+<!-- ==================== Upcoming Tasks Section ==================== -->
+<? if (!hasDue && !hasOverdue && hasUpcoming) { ?>
+<div class="section-header">➡️ Upcoming Tasks</div>
+<?!= include('UpcomingTasks', {
+    NextTasksByDate: NextTasksByDate,
+    resourceMap: resourceMap
+  }) ?>
+<? } ?>
+
+<!-- ==================== No Deadlines Section ==================== -->
+<? if (!hasDue && !hasOverdue && !hasUpcoming) { ?>
+<div class="section-header">📝 Resource Center</div>
+<div class="section-text">
+  <p class="lead-text teal" style="text-align:center; ">
+    Yup, you've had it since the Kick-off.<br>
+  See for yourself. Click below to open your Planner:</p>
+</div>
+<div style="text-align: center; margin: 20px 0;">
+  <a href="<?!= resourceLink ?>" target="_blank">
+    <img src="https://drive.google.com/uc?export=view&id=1_m-bxIO7myJsp5n67t2D5CFk1gmnGuT-" alt="A screenshot of the Resource Center in the student planner" style="width:100%; max-width:550px; display:block; border:1px solid #cccccc; margin: 0 auto;">
+  </a>
+</div>
+<? } ?>
+
+<!-- ==================== Psych Tip Section ==================== -->
+<div class="section-header">🧠 Psych Tip: “What‐the‐Hell Effect”</div>
+<div class="section-text">
+  <p style="font-size: 18px;">Streaks can be motivating — until you miss one day. Then it's...</p>
+
+  <p style="text-align: center; font-style: italic; font-size: 18px; color: #166886; margin: 20px 0; font-weight: 700;">
+    "What's the point? It's all ruined..."<br>
+    <strong>'What the Hell? (Effect)'</strong>
+  </p>
+  <p class="lead-text teal" style="text-align:center; margin-bottom:16px; font-size:18px;">
+    Your best response is <strong>self-compassion.</strong>
+  </p>
+
+<ul style="font-size:16px; line-height:1.5; margin:16px 0 24px; padding-left:20px;">
+  <li>Due dates are there to help you stay on track, not punish you.</li>
+  <li>Flexible deadlines are better for you than rigid ones.</li>
+  <li>Reschedule your tasks to new dates and keep going.</li>
+</ul>
+
+
+  <?!= include('EmailFooter'); ?>
