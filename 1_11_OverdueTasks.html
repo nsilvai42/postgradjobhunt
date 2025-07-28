@@ -1,0 +1,20 @@
+<!-- 1_11_OverdueTasks.html -->
+<? if (OverdueGroups && Object.keys(OverdueGroups).length) { ?>
+  <div class="section-text">
+    <p class="lead-text teal">The due dates you set for the tasks below have passed.</p>
+    <p><em>Already done?</em> 👉 Update your Planner!</p>
+    <p><em>Getting to it?</em> 👉 Reschedule deadlines in your Planner for this/next week.</p>
+  </div>
+
+  <? Object.keys(OverdueGroups).forEach(function(label) { ?>
+    <?!= include('TaskGroup', { groupLabel: label, tasksInGroup: OverdueGroups[label] }) ?>
+  <? }); ?>
+
+<? } else { ?>
+
+  <div class="section-text">
+    <p class="lead-text teal">Great work! You're all caught up and have no overdue tasks.</p>
+    <p>That means you're on track! Keep up the momentum by completing any tasks with deadlines coming up.</p>
+  </div>
+
+<? } ?>
