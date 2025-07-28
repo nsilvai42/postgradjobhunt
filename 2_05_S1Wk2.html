@@ -1,0 +1,53 @@
+<!-- 2_05_S1Wk2.html -->
+<?!= include('EmailStyles'); ?>
+<?!= include('EmailHeader'); ?>
+
+<div class="section-text">
+  <p>Hi
+    <?!= firstName ?>,
+  </p>
+
+  <p>Ready to tackle Week 2 of your Career Sprint? This week's psych tip comes straight from our favorite owl - read on!
+  </p>
+
+  <?!= include('PlannerButton', { careerPlanner: careerPlanner }) ?>
+</div>
+
+<div class="section-header">🎯 Tasks Due This Week</div>
+
+<? if (TaskGroups && Object.keys(TaskGroups).length) { ?>
+<? Object.keys(TaskGroups).forEach(function(label) { ?>
+<?!= include('TaskGroup', { groupLabel: label, tasksInGroup: TaskGroups[label] }) ?>
+<? }); ?>
+<? } else if (NextTasksByDate && Object.keys(NextTasksByDate).length) { ?>
+<?!= include('UpcomingTasks', { NextTasksByDate: NextTasksByDate }) ?>
+<? } else { ?>
+<?!= include('NoDeadlines') ?>
+<? } ?>
+
+<? if ((TaskGroups && Object.keys(TaskGroups).length) || (NextTasksByDate && Object.keys(NextTasksByDate).length)) { ?>
+<?!= include('OverdueTasks', { OverdueGroups: OverdueGroups }) ?>
+<? } ?>
+
+<div class="section-header">🧠 Psych Tip of the Week: <u>The Duolingo Effect</u></div>
+
+<div class="section-text">
+  <p>Ever wondered why it's painful to miss your daily Wordle, or lose a year-long Snap streak?
+    <strong>Our brains <em>hate</em> breaking a winning streak</strong>, even tiny ones.</p>
+
+  <p><a href="https://blog.duolingo.com/how-duolingo-streak-builds-habit/" class="strong">Duolingo's research</a>
+    found that especially early on, streaks can help us find motivation to work consistently towards our
+    goals.</p>
+
+  <p><strong>Here's how to use this trick in your job search:</strong>
+
+  <ol class="styled-list">
+    <li>Grab a calendar, notebook, whiteboard — something you see every day</li>
+    <li>Use a pen to mark each day you make even the tiniest job search progress.</li>
+    <li>That’s it! No pressure to do it all. <strong>Just don’t skip a day.</strong></li>
+  </ol>
+
+  <p>Let the Xs pile up. They’re proof that you’re showing up for yourself. That’s the kind of consistency that
+    builds real results.</p>
+
+  <?!= include('EmailFooter'); ?>
