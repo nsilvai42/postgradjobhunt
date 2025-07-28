@@ -1,0 +1,13 @@
+<!-- 1_09_UpcomingTasks.html -->
+<div class="section-text">
+  <p class="lead-text">You have no undone tasks due this week!</p>
+  <p>To get ahead, try completing the tasks coming up next:</p>
+</div>
+
+<? 
+  Object.keys(NextTasksByDate).forEach(function(label) { 
+?>  
+  <?!= include('TaskGroup', { groupLabel: label, tasksInGroup: NextTasksByDate[label] }) ?>
+<? 
+  }); 
+?>
