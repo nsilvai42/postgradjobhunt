@@ -1,0 +1,10 @@
+<!-- 3_04_S1Wk3_OffTrack_Progress.html -->
+<?
+  var stages=[{name:'Explore',pct:pctExploreDone,left:nExploreLeft},
+              {name:'Research',pct:pctResearchDone,left:nResearchLeft},
+              {name:'Apply',pct:pctApplyDone,left:nApplyLeft},
+              {name:'Strategize',pct:pctStrategizeDone,left:nStrategizeLeft}];
+  var nearlyDone=stages.filter(s=>s.left>0&&s.left<=4);
+?>
+<p>You've already come so much farther than you think! <?!= include('ERASStatement',{stageData,highlightProgress:false}) ?>
+
