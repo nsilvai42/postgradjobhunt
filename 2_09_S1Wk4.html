@@ -1,0 +1,51 @@
+<!-- 2_09_S1Wk4.html -->
+<?!= include('EmailStyles'); ?>
+<?!= include('EmailHeader'); ?>
+
+<div class="section-text">
+  <p>Hi <?!= firstName ?>,</p>
+
+  <p>We’ve made it to the final week of Sprint 1! </p>
+  <p>If you’ve been hitting your milestones, great work—keep that momentum going. If you’re a bit behind, don’t worry—there’s still time to catch up and finish strong before re-planning your undone tasks for Sprint 2.</p>
+
+  <?!= include('PlannerButton', { careerPlanner: careerPlanner }) ?>
+</div>
+
+<?
+  var hasDue      = TaskGroups && Object.keys(TaskGroups).length;
+  var hasOverdue  = OverdueGroups && Object.keys(OverdueGroups).length;
+  var hasUpcoming = NextTasksByDate && Object.keys(NextTasksByDate).length;
+?>
+<? if (hasDue) { ?>
+  <div class="section-header">🎯 Tasks Due This Week</div>
+  <? Object.keys(TaskGroups).forEach(function(lbl) { ?>
+    <?!= include('TaskGroup', { groupLabel: lbl, tasksInGroup: TaskGroups[lbl] }) ?>
+  <? }); ?>
+<? } ?>
+<? if (hasOverdue) { ?>
+  <div class="section-header">⏰ Overdue Tasks</div>
+  <? Object.keys(OverdueGroups).forEach(function(lbl) { ?>
+    <?!= include('TaskGroup', { groupLabel: lbl, tasksInGroup: OverdueGroups[lbl] }) ?>
+  <? }); ?>
+<? } ?>
+<? if (!hasDue && !hasOverdue && hasUpcoming) { ?>
+  <div class="section-header">➡️ Upcoming Tasks</div>
+  <?!= include('UpcomingTasks', { NextTasksByDate: NextTasksByDate }) ?>
+<? } ?>
+<? if (!hasDue && !hasOverdue && !hasUpcoming) { ?>
+  <?!= include('NoDeadlines') ?>
+<? } ?>
+
+<div class="section-header">🧠 Psych Tip of the Week: <u>The Goal Gradient Effect</u></div>
+
+<div class="section-text">
+  <p>Have you ever noticed you speed up as you get closer to the finish line? That’s the <strong>goal gradient effect</strong>—our motivation intensifies as we near a goal. </p>
+  <p class="lead-text teal"><strong>Use the extra motivation this week:</strong></p>
+  <ol class="styled-list">
+    <li>Take 5 minutes to prioritize how you'll do this week's tasks.</li>
+    <li>Order them by priority - most important first.</li>
+    <li>Try to go through as many tasks as you can before Sprint 2 starts!</li>
+  </ol>
+  <p>By harnessing this effect, you’ll find yourself naturally energized to push toward the finish line.</p>
+
+<?!= include('EmailFooter'); ?>
