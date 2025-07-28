@@ -1,0 +1,26 @@
+<!-- 1_13_ERASBullets.html -->
+<?
+  var { pctExploreDone, nExploreLeft,
+        pctResearchDone, nResearchLeft,
+        pctApplyDone, nApplyLeft,
+        pctStrategizeDone, nStrategizeLeft } = stageData;
+  var eras = [
+    { name:'Explore',    pct:pctExploreDone,    left:nExploreLeft    },
+    { name:'Research',   pct:pctResearchDone,   left:nResearchLeft   },
+    { name:'Apply',      pct:pctApplyDone,      left:nApplyLeft      },
+    { name:'Strategize', pct:pctStrategizeDone, left:nStrategizeLeft }
+  ];
+  eras
+    .filter(function(s) { return s.pct > 0 && s.left <= 4; })
+    .forEach(function(s) {
+      var style = s.pct === 1
+        ? 'font-weight:bold; color:#28a745;'
+        : '';
+?>  
+  <p style="margin:2px 0 2px 12px; text-align:left; <?!= style ?>">
+    • <strong><?!= s.name ?>:</strong>
+      <?!= Math.round(s.pct * 100) ?>% Done – <?!= s.left ?> task<?!= s.left === 1 ? '' : 's' ?> to go!
+  </p>
+<?
+    });
+?>  
