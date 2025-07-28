@@ -1,0 +1,459 @@
+<!-- 1_01_EmailStyles.html -->
+<head>
+  <meta charset="UTF-8" />
+  <title>Post-Grad Job Hunt</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Saira+Condensed:wght@400;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    /* ============================ */
+    /* 1. Page Reset & Base Styles */
+    /* ============================ */
+    html,
+    body {
+      width: 100%;
+      /* make the page as wide as the screen */
+      background-color: #f4f1ee;
+      /* give the page a light beige background */
+      font-family: 'Roboto', Arial, sans-serif;
+      /* choose a simple, readable font for all text */
+      color: #333;
+      /* use dark grey for text by default */
+      box-sizing: border-box;
+      /* include padding and borders in element's total size */
+    }
+
+    /* ================= */
+    /* 2. Main Container */
+    /* ================= */
+    .container {
+      width: 600px;
+      /* set a fixed width for the main white content box */
+      max-width: 100%;
+      /* let the box shrink on smaller screens like phones */
+      margin: 24px auto;
+      /* add space above/below the box and center it on the page */
+      background: #fff;
+      /* make the content box have a white background */
+      border-radius: 10px;
+      /* give the white box slightly rounded corners */
+      overflow: hidden;
+      /* hide anything that accidentally sticks out of the box */
+      padding: 16px 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      /* add a subtle shadow to make the box lift off the page */
+    }
+
+    /* ============== */
+    /* 3. Banner Area */
+    /* ============== */
+    .email-banner {
+      background-color: #166886;
+      /* use a deep teal color for the banner's background */
+      padding: 24px 8px;
+      /* add space inside the banner area */
+      text-align: center;
+      /* center the logo inside the banner */
+    }
+
+    .email-banner img {
+      max-width: 180px;
+      /* don't let the logo get wider than 180px */
+      height: auto;
+      /* automatically adjust height to keep the right shape */
+    }
+
+    /* ================= */
+    /* 4. Section Styling */
+    /* ================= */
+    .section-header {
+      display: block;
+      /* make the header take up its own full line */
+      background-color: #fff200;
+      /* use a bright yellow for the background */
+      padding: 10px 16px;
+      /* add space inside the yellow bar */
+      font-family: 'Saira Condensed', Arial, sans-serif;
+      /* use a special, bold-looking font for headers */
+      font-size: 22px;
+      /* make the header text large and easy to see */
+      font-weight: 700;
+      /* make the header text bold */
+      color: #166886;
+      /* use a teal color for the text */
+      margin: 12px 16px 0;
+      /* add space above and below the yellow bar */
+      border-radius: 4px;
+      /* give the yellow bar slightly rounded corners */
+      border: 1px solid #f0e6b8;
+      /* add a thin, lighter yellow border for detail */
+    }
+
+    .section-subheader {
+      display: block;
+      /* lets width take effect cleanly        */
+      width: 65%;
+      /* spans 75 % of the header’s width      */
+      text-align: left;
+      /* text hugs the left edge                */
+      background-color: #fffac2;
+      padding: 4px 10px;
+      font-family: 'Saira Condensed', Arial, sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #166886;
+      margin: 8px 16px 18px;
+      border-radius: 12px;
+      border: 0;
+    }
+
+    .section-text {
+      padding: 0 32px;
+      /* add space to the left and right of the main text content */
+    }
+
+
+    /* ============ */
+    /* 5. Text Base */
+    /* ============ */
+    p,
+    ul,
+    li,
+    em {
+      font-size: 16px;
+      /* set a comfortable reading size for normal text */
+      line-height: 1.6;
+      /* add extra space between lines of text for readability */
+    }
+
+    .styled-list {
+      margin: 0 0 16px 20px;
+      /* add space below the list and indent it from the left */
+      padding-left: 0;
+      /* remove any extra default space on the left */
+    }
+
+    .styled-list li {
+      margin-bottom: 8px;
+      /* add a little space below each item in the list */
+    }
+
+    /* =================== */
+    /* 6. Links & Emphasis */
+    /* =================== */
+    a {
+      color: #166886;
+      /* make links teal-colored */
+      text-decoration: underline;
+      /* put an underline on links */
+    }
+
+
+    .tip-box p {
+      font-weight: 700;
+      /* make important text extra bold */
+      color: #166886;
+      /* and make it teal-colored */
+    }
+
+    .strong {
+      font-weight: 700;
+      /* make important text extra bold */
+      color: #166886;
+      /* and make it teal-colored */
+    }
+
+    strong {
+      font-weight: 700;
+      /* make important text extra bold */
+      color: #166886;
+      /* and make it teal-colored */
+    }
+
+    strong.black {
+      color: #000;
+    }
+
+    /* Progress Bar Styles */
+    .progress-bar-container {
+      background-color: #e0e0e0;
+      border-radius: 10px;
+      margin: 16px 32px;
+      overflow: hidden;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    .progress-bar-fill {
+      background-color: #166886;
+      /* Your main teal color */
+      height: 24px;
+      line-height: 24px;
+      /* Vertically center text */
+      color: #fff;
+      font-weight: bold;
+      border-radius: 8px 0 0 8px;
+      white-space: nowrap;
+    }
+
+    /* For the new stats block in the Hunter email */
+    .stats-container {
+      background-color: #f7f7f7;
+      /* A very light grey background */
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      margin: 24px 0;
+      /* More vertical space */
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stats-container p {
+      margin: 0 0 12px 0;
+      font-size: 16px;
+      color: #333;
+    }
+
+
+    /* ======================= */
+    /* 7. Checklist & Tasks    */
+    /* ======================= */
+    .checklist-li {
+      display: flex;
+      align-items: flex-start;
+      margin: 24px 28px 12px;
+    }
+
+    .checklist-ul {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 24px;
+    }
+
+    .checklist-box {
+      width: 17px;
+      min-width: 17px;
+      height: 17px;
+      border: 2px solid #555;
+      background-color: #fff;
+      box-sizing: border-box;
+      margin-right: 12px;
+      align-self: flex-start;
+    }
+
+    .task-text {
+      flex: 1;
+    }
+
+    .task-content {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+      line-height: 18px;
+    }
+
+    .task-content.normal {
+      font-size: 18px;
+      font-weight: normal;
+    }
+
+    .resource-row {
+      display: flex;
+      /* two columns, one row         */
+      align-items: center;
+      /* center BOTH cols vertically   */
+      justify-content: space-between;
+      margin: 12px 20px;
+      padding: 10px 8px;
+      border-top: 2px solid #eee;
+    }
+
+    /* first & last row in each block */
+    .resource-block .resource-row:first-child {
+      border-top: none;
+      margin-top: 16px;
+    }
+
+    .resource-block .resource-row:last-child {
+      margin-bottom: 18px;
+    }
+
+    /* ─── DESCRIPTION COLUMN ───────────────────────────────────── */
+    .resource-desc {
+      flex: 1;
+      /* take remaining row width      */
+      line-height: 1.5;
+      /* comfortable read              */
+      text-align: left;
+      color: #555;
+      font-size: 15px;
+      margin-right: 16px;
+    }
+
+    /* keep the bold “key” on one line + small gap */
+    .resource-desc strong {
+      white-space: nowrap;
+      /* prevents awkward line break   */
+      margin-right: 4px;
+      /* tiny gap before the value     */
+      font-weight: 700;
+      color: #166886;
+    }
+
+
+
+    /* ======================= */
+    /* 8. Emphasis & Alerts   */
+    /* ======================= */
+    .lead-text {
+      font-size: 18px;
+      /* make the text a bit larger */
+      font-weight: 700;
+      /* make the text bold */
+      margin: 10px 0 10px;
+      /* add space above and below it */
+      color: #525252;
+      /* default (dark grey) color */
+    }
+
+    .lead-text.teal {
+      color: #166886;
+    }
+
+    .alert-text {
+      font-size: 18px;
+      /* make alert text larger */
+      font-weight: 700;
+      /* make alert text bold */
+      color: #8B0000;
+      /* use a dark red color for alerts */
+      margin-bottom: 16px;
+      /* add space below the alert text */
+    }
+
+    /* =================================== */
+    /* 9. Special Elements (Tips & Buttons) */
+    /* =================================== */
+    .tip-box {
+      display: flex;
+      /* arrange icon and text side-by-side */
+      align-items: flex-start;
+      /* align them to the top */
+      background-color: #fffbe6;
+      /* use a pale yellow background color */
+      border: 1px solid #f0e6b8;
+      /* add a light yellow border */
+      border-left: 4px solid #ffd700;
+      /* add a thick gold accent line on the left */
+      border-radius: 0 8px 8px 0;
+      /* round the right-side corners */
+      padding: 2px 14px;
+      /* add space inside the tip box */
+      margin: 24px 0;
+      /* add space above and below the tip box */
+    }
+
+    .button-container {
+      text-align: center;
+      /* center the buttons within the container */
+      margin: 0;
+      /* add space above and below the buttons */
+    }
+
+    .button-container.text-left {
+      text-align: left;
+      /* special style to align a button to the left */
+    }
+
+    .btn {
+      display: inline-block;
+      /* make the button size to its content */
+      font-family: 'Roboto', Arial, sans-serif;
+      /* use the main readable font */
+      font-weight: bold;
+      /* make the button text bold */
+      text-decoration: none !important;
+      /* remove the default underline from the link */
+      border-radius: 20px;
+      /* make the button have rounded corners (pill shape) */
+      text-align: center;
+      /* center the text inside the button */
+      white-space: nowrap;
+      /* stop the text from wrapping to a new line */
+    }
+
+    .btn-solid {
+      background-color: #166886;
+      /* use a teal background color */
+      color: #fff !important;
+      /* make the text white */
+      border: 2px solid #166886;
+      /* add a matching teal border */
+    }
+
+    .btn-hollow {
+      background-color: #fff;
+      /* use a white background */
+      color: #166886 !important;
+      /* make the text teal-colored */
+      border: 1px solid #166886;
+      /* add a teal border */
+    }
+
+    .btn-small {
+      /* set a minimum width for the button */
+      min-width: 110px;
+      height: 40px;
+      /* set a fixed height */
+      line-height: 40px;
+      /* trick to center the text vertically */
+      font-size: 14px;
+      /* use smaller text for small buttons */
+      padding: 0 4px;
+      /* add space on the left and right of the text */
+      margin-top: 2px;
+
+
+    }
+
+    .btn-large {
+      padding: 8px 18px;
+      /* add more space inside larger buttons */
+      font-size: 16px;
+      /* use a slightly larger text size */
+    }
+
+    /* ======================= */
+    /* 10. Signature & Footer   */
+    /* ======================= */
+    .signature {
+      margin: 32px 0;
+      /* add space above the signature area */
+      padding-top: 24px;
+      /* add space above the signature text */
+      border-top: 1px solid #eeeeee;
+      /* add a light grey line to separate it */
+    }
+
+    .signature p {
+      margin: 4px 0;
+      /* add a small amount of space between lines */
+    }
+
+    .signature em {
+      font-style: italic;
+      /* make the text italic (slanted) */
+      font-size: 15px;
+      /* use a slightly smaller text size */
+      color: #555555;
+      /* use a medium grey color */
+    }
+
+    .signature em a {
+      color: #166886;
+      /* make the link inside the signature teal */
+      font-weight: 700;
+      /* make the link bold */
+    }
+  </style>
+</head>
