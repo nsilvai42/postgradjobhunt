@@ -1,0 +1,64 @@
+<!-- 3_01_S1Wk3_OnTrack_Intro.html -->
+<?
+  // Bring in the top-level vars you need:
+  var nChangePrevWeeks    = nChangePrevWeeks;
+  var pctChangePrevWeeks  = pctChangePrevWeeks;
+  var currentProgress     = currentProgress;
+?>
+<!-- 1) LAST WEEK vs. CUSTOM MESSAGE (outside the card) -->
+  <? if (nChangePrevWeeks > 1) { ?>
+    <p style="margin:0 0 8px 0;">
+      <strong>You completed <?!= Math.round(nChangePrevWeeks) ?> tasks these past weeks.</strong>
+    </p>
+  <? } else { ?>
+    <p style="margin:0 0 8px 0;">
+      <?!= include('ERASStatement', {
+         stageData: stageData,
+         highlightProgress: true
+    }) ?>
+    </p>
+  <? } ?>
+
+  <!-- 2a) “That means you’re…” OR Stage breakdown -->
+  <? if (nChangePrevWeeks > 1) { ?>
+    <p style="margin:0 0 8px 0; font-weight:bold; text-align:left; color:#28a745;">
+      That means you’re <?!= Math.round(pctChangePrevWeeks * 100) ?>% closer to completing your Career Checklist!
+    </p>
+  <? } else { ?>
+    <?!= include('ERASBullets', { stageData: stageData }) ?>
+    <? }); ?>
+  <? } ?>
+
+  <!-- 2) STATS CARD -->
+  <? if (currentProgress >= 0.40) { ?>
+    <div
+      class="stats-container"
+      style="border:1px solid #28a745; border-radius:8px; padding:12px 16px; background-color:#f9f9f9; margin:12px 0;"
+    >
+      <p style="margin:0 0 8px 0; text-align:center; font-weight:bold;">Overall Progress:</p>
+      <div
+        class="progress-bar-container"
+        style="margin:6px 0 0 0; border-radius:4px; overflow:hidden; background:#e0e0e0;"
+      >
+        <div
+          class="progress-bar-fill"
+          style="
+            width: <?!= Math.round(currentProgress * 100) ?>%;
+            padding:4px;
+            font-weight:500;
+            text-align:center;
+            background-color:#28a745;
+            color:white;
+          "
+        >
+          <?!= Math.round(currentProgress * 100) ?>% Complete
+        </div>
+      </div>
+    </div>
+  <? } ?>
+
+  <p style="margin:8px 0 0 0;">
+    To keep the success wave going, below are the tasks on your plate for this week and a new tip to help you ride this momentum.
+  </p>
+  <?!= include('PlannerButton', { careerPlanner: careerPlanner }) ?>
+
