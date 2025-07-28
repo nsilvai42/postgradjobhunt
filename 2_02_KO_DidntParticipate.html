@@ -1,0 +1,61 @@
+<!-- 2_02_KO_DidntParticipate.html -->
+<?!= include('EmailStyles'); ?>
+<?!= include('EmailHeader'); ?>
+
+<div class="section-text">
+  <p>Hi
+    <?!= firstName ?>,
+  </p>
+
+  <p>It was great seeing you at the Post-Grad Job Hunt kickoff!</p>
+  <p>We noticed you haven't checked off any of the tasks in your Career Checklist or assigned them to a sprint or
+    deadline. We won't be able to send you personalized reminders with tools to complete your tasks if we don't know
+    when
+    you want to do them by!</p>
+
+  <p class="lead-text teal">
+    To make the most out of the Career Sprint support structures, follow the steps we went over during the Kick-Off to
+    make your job search plan.
+  </p>
+
+  <p>Here's the
+    <?!= include('KickOffLinks') ?> for reference!
+  </p>
+
+  <?!= include('PlannerButton', { careerPlanner: careerPlanner }) ?>
+</div>
+
+<div class="section-header">🎯 This Week’s To-Dos</div>
+<div class="section-text">
+  <p> Sprint 1 starts next week. Here’s how to hit the ground running:</p>
+
+  <?!= include('KickOffTasks'); ?>
+</div>
+
+<div class="section-header">🧠 Psych Tip of the Week: <u>Accountability</u></div>
+<div class="section-text">
+  <p>Everyone works differently: find what motivates you. Choose one of these mechanisms to keep yourself
+    accountable:
+  </p>
+
+  <ul class="styled-list">
+    <li><strong>Find an accountability partner</strong> and schedule regular check-ins</li>
+    <li><strong>Announce your goal publicly</strong> on social media</li>
+    <li><strong>Email a mentor</strong> when you complete a meaningful action step</li>
+    <li><strong>Use calendar invites as reminders</strong> to stay on track with your goals and deadlines.</li>
+    <li><strong>Use a habit tracker</strong> app on your phone</li>
+    <li><strong>Put up sticky note reminders</strong> in places where you look every day.</li>
+  </ul>
+</div>
+
+<div class="section-header">💬 Feedback Survey</div>
+<div class="section-text">
+  <p>If you weren’t able to complete the survey after the event, please take 1–2 minutes to complete it now. We
+    really
+    appreciate your feedback!</p>
+
+  <div class="button-container">
+    <a href="<?!= feedbackSurvey ?>" class="btn btn-solid btn-large">Complete the Survey</a>
+  </div>
+
+<?!= include('EmailFooter'); ?>
