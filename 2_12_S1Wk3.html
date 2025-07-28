@@ -1,0 +1,269 @@
+<!-- 2_12_S1Wk3.html -->
+<?!= include('EmailStyles'); ?>
+<?!= include('EmailHeader'); ?>
+
+<div class="section-text">
+  <p>
+    Hi <?!= firstName ?>,
+  </p>
+
+  <? if (cluster === 'Dormant') { ?>
+  <p>
+    This week I wanted to share a personalized next step to help you build some momentum.
+  </p>
+  <? } else { ?>
+  <p>
+    Here is your focused plan for the week. Let's keep the momentum going!
+  </p>
+  <? } ?>
+
+  <?!= include('PlannerButton', { careerPlanner: careerPlanner }) ?>
+</div>
+
+<? if (cluster === 'Dormant') { ?>
+
+<div class="section-header">
+  ⭐ Your Personalized Next Step
+</div>
+
+<? if (!hasDoneEXP4) { ?>
+<div class="section-text">
+  <p>
+    I noticed you haven't set up a resume or cover letter template yet.
+  </p>
+  <p class="lead-text teal">
+    Your only goal this week: To get a first <u>draft</u> done.
+  </p>
+  <ul class="styled-list">
+    <li>
+      <a href="https://docs.google.com/document/d/1D_vy9Alu65sDEZt4GVowefmKEGcyO01e5gOCXDyoKc4/edit?usp=sharing">
+        Start with this Template</a>.
+    </li>
+    <li>
+      <a href="https://bottomlinecareer.org/ai-tools">
+        Use these AI Prompts</a> to help you write your bullets.
+    </li>
+    <li>
+      <a href="https://tbl500amory.sharepoint.com/sites/CareerResources/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FCareerResources%2FShared%20Documents%2FPost%2DGrad%20Job%20Hunt%2FJob%20Search%20and%20Application%20Resources%2FApplication%20Materials%2FResume%2F%5BGuide%5D%20Guide%20to%20Writing%20a%20Resume%2Epdf&parent=%2Fsites%2FCareerResources%2FShared%20Documents%2FPost%2DGrad%20Job%20Hunt%2FJob%20Search%20and%20Application%20Resources%2FApplication%20Materials%2FResume&p=true&ga=1">
+        Follow this Guide</a>.
+    </li>
+  </ul>
+</div>
+
+<? } else if (!hasDoneRES3) { ?>
+<div class="section-text">
+  <p>
+    I noticed you still haven't reached out to a contact for an informational interview: Remember,
+    <em>about 75% of roles are filled through these sorts of chats!</em>
+  </p>
+  <p class="lead-text teal">
+    Your only goal this week is to send <strong>one</strong> email asking for a coffee chat.
+  </p>
+
+  <h3 style="color:#1c8a70; margin-top:20px; font-size:18px;">
+    Option 1: Reach out to a contact directly
+  </h3>
+  <div style="background-color:#f7f9f9; padding:15px; border-radius:5px; margin-bottom:15px;">
+    <p>Hi [Contact's Name],</p>
+    <p>
+      I would love the opportunity to meet with you for an informational interview. [Add a little about yourself like
+      grade level, major, school attending, and what you're interested in.] [Add a sentence about why this person sounds
+      relevant to your interests.]
+    </p>
+    <p>
+      I'd love to learn more about your current role and career path. [Add a couple specific topics or questions you'd
+      like to talk about.]
+    </p>
+    <p>
+      Would any of these times work for a 30-minute call?
+    </p>
+    <ul style="padding:0;">
+      <li>[Example: Monday, 10/21 @ 10am and 4pm-8pm ET] — don’t forget your time zone!</li>
+      <li>[Day, Date @ Time ET]</li>
+      <li>[Day, Date @ Time ET]</li>
+    </ul>
+    <p>Thank you!<br>Best,<br>[Your Name]</p>
+  </div>
+
+  <h3 style="color:#1c8a70; margin-top:20px; font-size:18px;">
+    Option 2: Asking a contact for a connection
+  </h3>
+  <div style="background-color:#f7f9f9; padding:15px; border-radius:5px;">
+    <p>Hi [Contact's Name],</p>
+    <p>
+      I hope you’re doing well! [Insert an update about yourself, like where you’re at in school or a big decision
+      coming up.]
+    </p>
+    <p>
+      I’d love to learn more about [the major or career you’re interested in], and I was wondering if you know anyone
+      who works in [the area you’re interested in] that you’d be comfortable connecting me with for an informational
+      interview. I’d ask for a 30-minute call to learn more about their role, their employer, and their career path.
+    </p>
+    <p>Thanks so much for considering it!<br>Best,<br>[Your Name]</p>
+  </div>
+</div>
+
+<? } else if (!hasDoneAPP7) { ?>
+<div class="section-text">
+  <p>
+    I noticed you haven't started answering common interview questions. You don't need an interview scheduled to start
+    prepping!
+  </p>
+  <p class="lead-text teal">
+    Your only goal this week: Answer the interview questions below.
+  </p>
+
+  <h3 style="color:#1c8a70; margin-top:20px;">
+    "Tell Me About Yourself"
+  </h3>
+  <div style="background-color:#f7f9f9; padding:15px; border-radius:5px; margin-bottom:15px;">
+    <p>
+      This is the most common and important question. Answer it by discussing your:
+    </p>
+    <ul class="styled-list">
+      <li>Present: What do you do now? (School, major, grad year)</li>
+      <li>Past: What have you done? (Work, volunteer, relevant experiences)</li>
+      <li>Future: What do you want to do, and how does this role help? (Be specific)</li>
+    </ul>
+  </div>
+
+  <h3 style="color:#1c8a70; margin-top:20px;">
+    "Tell me about a time when you set a goal for yourself. How did you achieve it?"
+  </h3>
+  <div style="background-color:#f7f9f9; padding:15px; border-radius:5px; margin-bottom:15px;">
+    <p>
+      This is a 'behavioral' question, and there's a specific way to answer it! Describe the:
+    </p>
+    <ul>
+      <li><strong>Situation:</strong> What was the situation? Set the scene</li>
+      <li><strong>Task:</strong> What was the task at hand? What did you need to do?</li>
+      <li><strong>Action:</strong> What actions did you take? What did you actually do?</li>
+      <li><strong>Result:</strong> As a result, what happened? What did you learn from the experience?</li>
+      <li><strong>Relevant:</strong> Share how the actions and results are relevant to the position you're interviewing
+        for.</li>
+    </ul>
+  </div>
+
+  <ul class="styled-list">
+    <li>
+      <strong>
+        <a href="https://bottomlinecareer.org/interview-talking-points">
+          Write your answer in this document
+        </a>
+      </strong>
+    </li>
+    <li>
+      <strong>
+        <a href="https://grow.google/certificates/interview-warmup/">
+          Practice it using this tool
+        </a>
+      </strong>
+    </li>
+  </ul>
+</div>
+<? } ?>
+
+<? } else { ?>
+
+<?
+  // Determine which task block to render based on priority
+  var hasDue = TaskGroups && Object.keys(TaskGroups).length > 0;
+  var hasOverdue = OverdueGroups && Object.keys(OverdueGroups).length > 0;
+  var hasUpcoming = NextTasksByDate && Object.keys(NextTasksByDate).length > 0;
+?>
+
+<? if (hasDue) { ?>
+<div class="section-header">🎯 Tasks Due This Week</div>
+<?
+    var tasksShown = 0;
+    Object.keys(TaskGroups).forEach(function(lbl) {
+      if (tasksShown >= 3) { return; }
+
+      var slotsLeft = 3 - tasksShown;
+      var tasksInGroup = TaskGroups[lbl].slice(0, slotsLeft);
+
+      if (tasksInGroup.length > 0) {
+  ?>
+<?!= include('TaskGroup', { groupLabel: lbl, tasksInGroup: tasksInGroup }) ?>
+<?
+        tasksShown += tasksInGroup.length;
+      }
+    });
+  ?>
+
+<? } else if (hasOverdue) { ?>
+<div class="section-header">⏰ Overdue Tasks</div>
+<?
+    var tasksShown = 0;
+    Object.keys(OverdueGroups).forEach(function(lbl) {
+      if (tasksShown >= 3) { return; }
+
+      var slotsLeft = 3 - tasksShown;
+      var tasksInGroup = OverdueGroups[lbl].slice(0, slotsLeft);
+      
+      if (tasksInGroup.length > 0) {
+  ?>
+<?!= include('TaskGroup', { groupLabel: lbl, tasksInGroup: tasksInGroup }) ?>
+<?
+        tasksShown += tasksInGroup.length;
+      }
+    });
+  ?>
+
+<? } else if (hasUpcoming) { ?>
+<div class="section-header">➡️ Upcoming Tasks</div>
+<?!= include('UpcomingTasks', {
+      NextTasksByDate: NextTasksByDate,
+      resourceMap: resourceMap
+    }) ?>
+
+<? } else { ?>
+<div class="section-header">➡️ Upcoming Tasks</div>
+<div class="section-text">
+  <p class="lead-text teal">You have no tasks with upcoming deadlines in your planner - Is this intentional?</p>
+  <p>Take a few seconds to visit your planner and check that you've assigned a deadline to all of your undone tasks.
+  </p>
+  <p>In the meantime: Have you checked out your Planner's <strong>Resource Center</strong>?</p>
+  <p>It's filled with tools and guides for every stage of your job search.</p>
+  <div style="text-align:center; margin:20px 0;">
+    <a href="<?!= resourceLink ?>" target="_blank" style="display:inline-block; border:1px solid #cccccc;">
+      <img src="https://drive.google.com/uc?export=view&id=1_m-bxIO7myJsp5n67t2D5CFk1gmnGuT-"
+        alt="A screenshot of the Resource Center in the student planner."
+        style="width:100%; max-width:550px; display:block;">
+    </a>
+  </div>
+</div>
+<? } ?>
+
+<? } ?>
+
+<div class="section-header">🧠 Psych Tip of the Week: <u>Future Me</u></div>
+
+<div class="section-text">
+  <p>Did you know your brain thinks of your future self the same way it thinks of a complete stranger?</p>
+  <p>
+    <em>Anything that feels "far" in time, space, or even social 'closeness' feels more abstract.</em>
+    It's hard to work so that an abstract "stranger" gets to benefit months from now.
+  </p>
+  <p class="lead-text teal" style="margin-top:24px;">
+    <strong>There are ways to reduce this psychological distance.<br>In a blank document:</strong>
+  </p>
+  <ol class="styled-list">
+    <li>
+      <strong>Write 3 sentences <em>from</em> your future self,</strong> to your current self describing the feeling of
+      having landed your new role. Be as specific as possible.
+      <ul style="margin-top:5px; font-size:15px; color:#555;">
+        <li><em>"I'm a few months into my job as a [Job Title] at [Company]..."</em></li>
+        <li><em>"That feeling of relief when I got the offer was incredible..."</em></li>
+        <li><em>"Thank you for not giving up. The hard work you're doing right now is what made this possible."</em>
+        </li>
+      </ul>
+    </li>
+  </ol>
+  <p>
+    This closes the distance between you and your future. It makes the reward feel real and personal,
+    giving you a powerful reason to work hard for that person—because that person is you.
+  </p>
+
+
+<?!= include('EmailFooter'); ?>
