@@ -1,0 +1,193 @@
+<!-- 2_10_S2Wk1.html -->
+<?!= include('EmailStyles') ?>
+<?!= include('EmailHeader') ?>
+
+<!-- Greeting -->
+<div class="section-text">
+  <p>Hi
+    <?!= firstName ?>,
+  </p>
+  <p>
+    Welcome to Sprint 2! This is a fresh chance to set the tone for the next 4 weeks.
+  </p>
+
+  <!-- Overall progress -->
+  <? if (currentProgress > 0.04) { ?>
+  <p style="margin-bottom:12px; font-weight:bold;">
+    You completed
+    <?!= Math.round(currentProgress * 100) ?>% of your tasks in Sprint 1!
+  </p>
+  <table width="85%" border="0" cellpadding="0" cellspacing="0" role="presentation"
+    style="border-collapse:collapse; margin:6px 0 0 0;">
+    <tr>
+      <td style="padding:0;">
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation"
+          style="border-collapse:collapse;">
+          <tr>
+            <td width="<?!= Math.round(currentProgress * 100) ?>%" style="
+                  background:#28a745;
+                  padding:4px 0;
+                  text-align:center;
+                  font-weight:700;
+                  color:white;
+                ">
+              <?!= Math.round(currentProgress * 100) ?>%
+            </td>
+            <td style="background:#e0e0e0;">&nbsp;</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+  <? } ?>
+
+  <!-- Sprint 2 stage bars -->
+  <table width="85%" border="0" cellpadding="0" cellspacing="0" role="presentation"
+    style="border-collapse:collapse; margin-top:14px;">
+    <? 
+    var pctMap = {
+      'Explore': pctExploreDone,
+      'Research': pctResearchDone,
+      'Apply': pctApplyDone,
+      'Strategize': pctStrategizeDone
+    };
+    var colorMap = {
+      'Explore': '#fae4ab',
+      'Research': '#fae9e6',
+      'Apply': '#e7eff5',
+      'Strategize': '#b6e1cd'
+    };
+    ['Explore','Research','Apply','Strategize'].forEach(stage => {
+      var pct   = pctMap[stage];
+      var color = colorMap[stage];
+      if (pct > 0.2) {
+  ?>
+    <tr>
+      <td width="80"
+        style="vertical-align:middle; white-space:nowrap; padding-right:4px; padding-top: 4px; padding-bottom: 4px;">
+        <strong><?!= stage ?>:</strong>
+      </td>
+      <td width="100%" style="padding:0;">
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation"
+          style="border-collapse:collapse;">
+          <tr>
+            <td width="<?!= Math.round(pct * 100) ?>%" style="
+              background:<?!= color ?>;
+              padding:3px 0;
+              text-align:center;
+              font-size:90%;
+              font-weight:700;
+              color:#166886;
+            ">
+              <?!= Math.round(pct * 100) ?>%
+            </td>
+            <td style="background:#e0e0e0;">&nbsp;</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <? } }); ?>
+  </table>
+
+
+  <!-- Mid‐copy encouragement -->
+
+  <p class="lead-text" style="margin-top:16px;">
+    Most new grads take <strong>3–6 months on average</strong> to land a job.
+  </p>
+  <p>
+    You’re not behind! Take a moment to pause, celebrate what you’ve done so far, and realign for the weeks ahead.
+  </p>
+  <?!= include('PlannerButton', { careerPlanner: careerPlanner }) ?>
+</div>
+
+<? 
+  // --- TASK‐DISPLAY LOGIC (unchanged) ---
+  var nCurrent  = Object.keys(TaskGroups || {}).reduce((sum,lbl) => sum + TaskGroups[lbl].length, 0);
+  var nOverdue  = Object.keys(OverdueGroups || {}).reduce((sum,lbl) => sum + OverdueGroups[lbl].length, 0);
+  var slotsLeft = 5;
+?>
+
+<!-- Tasks Due This Week -->
+<? if (nCurrent > 0) { ?>
+<div class="section-header">🎯 Tasks Due This Week</div>
+<? Object.keys(TaskGroups).forEach(lbl => {
+       if (slotsLeft <= 0) return;
+       var list = TaskGroups[lbl].slice(0,3).slice(0, slotsLeft);
+       slotsLeft -= list.length;
+       if (list.length) { ?>
+<?!= include('TaskGroup', { groupLabel: lbl, tasksInGroup: list }) ?>
+<? } }); ?>
+<? } ?>
+
+<!-- Overdue Tasks -->
+<? if (nOverdue > 0 && slotsLeft > 0) { ?>
+<div class="section-header">⏰ Overdue Tasks</div>
+<? if (nOverdue >= 3 && nCurrent > 0) {
+       slotsLeft = 0; ?>
+<div class="section-text">
+  <p class="lead-text"><strong>You have 3 or more tasks overdue.</strong></p>
+  <p>Check your planner to see which they are and reschedule or mark them done!</p>
+</div>
+<? } else {
+       Object.keys(OverdueGroups).forEach(lbl => {
+         if (slotsLeft <= 0) return;
+         var list = OverdueGroups[lbl].slice(0,3).slice(0, slotsLeft);
+         slotsLeft -= list.length;
+         if (list.length) { ?>
+<?!= include('TaskGroup', { groupLabel: lbl, tasksInGroup: list }) ?>
+<? } });
+     } ?>
+<? } ?>
+
+<!-- Upcoming Tasks -->
+<? if (nCurrent === 0 && nOverdue === 0) { ?>
+<div class="section-header">➡️ Upcoming Tasks</div>
+<? 
+    var upcoming = NextTasksByDate ? [].concat(...Object.values(NextTasksByDate)) : [];
+    if (upcoming.length) {
+      var list = upcoming.slice(0,3); ?>
+<ul class="checklist-ul" style="margin:16px;">
+  <? list.forEach(item => { ?>
+  <?!= include('SingleTaskItem', { item: item }) ?>
+  <? }); ?>
+</ul>
+<? } else { ?>
+<div class="section-text">
+  <p>No tasks on the horizon yet—return to your planner to add new deadlines and keep the momentum going!</p>
+</div>
+<? } ?>
+<? } ?>
+
+<!-- Psych Tip -->
+<div class="section-header">🧠 Psych Tip of the Week: <u>Temptation Bundling</u></div>
+<div class="section-text">
+  <p>
+    Let’s be honest: some job search tasks can feel like a real grind. This week’s tip is a simple but powerful hack to
+    turn a chore into a treat.
+  </p>
+  <p>
+    It’s called <strong>Temptation Bundling</strong>, a concept from behavioral scientist Katy Milkman. The rule is
+    simple: you link an activity you <em>want</em> to do with a task you <em>should</em> do.
+  </p>
+
+  <p class="lead-text teal"><strong>Here’s how to build your own temptation bundle:</strong></p>
+  <ol class="styled-list">
+    <li>
+      <strong>Pick a "want"</strong>—a genuine indulgence (e.g., a podcast, a fancy drink, or even 10 minutes of doom scrolling.
+    </li>
+    <li>
+      <strong>Pick a "should"</strong>—one of your job search tasks for this week.
+    </li>
+    <li>
+      <strong>Create your rule:</strong> "I will only let myself [enjoy my want] <em>while</em> I am [doing my should
+      task]."
+    </li>
+  </ol>
+
+  <p>
+    By linking an immediate reward directly to the work, you're not just getting tasks done—you're hacking your own
+    motivation and making progress feel good.
+  </p>
+
+  <?!= include('EmailFooter') ?>
