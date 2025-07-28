@@ -1,0 +1,32 @@
+<!-- 1_07_SingleTaskItem.html -->
+<li class="checklist-li">
+  <div class="checklist-box"></div>
+  <div class="task-text">
+    <p class="task-content"><?!= item.task ?></p>
+  </div>
+</li>
+
+<? if (item.resources && item.resources.length) { ?>
+  <div class="resource-block">
+    <? item.resources.forEach(function(res) { ?>
+      <?
+        var descText       = res.description || '';
+        var descColonIndex = descText.indexOf(':');
+        var descKey        = descColonIndex > -1 ? descText.slice(0, descColonIndex) : '';
+        var descValue      = descColonIndex > -1 ? descText.slice(descColonIndex + 1).trim() : descText;
+      ?>
+      <div class="resource-row">
+        <div class="resource-desc">
+          <? if (descKey) { ?>
+            <strong><?!= descKey ?>:</strong> <?!= descValue ?>
+          <? } else { ?>
+            <?!= descValue ?>
+          <? } ?>
+        </div>
+        <a href="<?!= res.url ?>" class="btn btn-hollow btn-small">
+          <?!= res.text ?>
+        </a>
+      </div>
+    <? }); ?>
+  </div>
+<? } ?>
