@@ -1,0 +1,51 @@
+<!-- 2_04_S1Wk1.html -->
+<?!= include('EmailStyles'); ?>
+<?!= include('EmailHeader'); ?>
+
+<div class="section-text">
+  <p>Hi
+    <?!= firstName ?>,
+  </p>
+
+  <p>We’re excited to officially kick off this summer’s first Career Sprint.</p>
+
+  <?!= include('PlannerButton', { careerPlanner: careerPlanner }) ?>
+
+  <p class="lead-text teal">Below are your weekly tasks and tools to complete them:</p>
+</div>
+
+<div class="section-header">🎯 Tasks Due This Week</div>
+<? if (TaskGroups && Object.keys(TaskGroups).length) { ?>
+<? Object.keys(TaskGroups).forEach(function(label) { ?>
+<?!= include('TaskGroup', { groupLabel: label, tasksInGroup: TaskGroups[label] }) ?>
+<? }); ?>
+<? } else if (NextTasksByDate && Object.keys(NextTasksByDate).length) { ?>
+<?!= include('UpcomingTasks', { NextTasksByDate: NextTasksByDate }) ?>
+<? } else { ?>
+<?!= include('NoDeadlines') ?>
+<? } ?>
+
+<? if ((TaskGroups && Object.keys(TaskGroups).length) || (NextTasksByDate && Object.keys(NextTasksByDate).length)) { ?>
+<?!= include('OverdueTasks', { OverdueGroups: OverdueGroups }) ?>
+<? } ?>
+
+<div class="section-header">🧠 Psych Tip of the Week: <u>Fresh Starts</u></div>
+
+<div class="section-text">
+  <p>Ever noticed the gym seems busier on Monday, January, and the start of a new season? <a
+      href="https://faculty.wharton.upenn.edu/wp-content/uploads/2014/06/Dai_Fresh_Start_2014_Mgmt_Sci.pdf"
+      class="strong">Studies find we’re 30% more likely</a> to follow through on goals we set right after a new week,
+    month, or birthday.</p>
+
+  <p>These moments are called “fresh starts”: Starting strong will help you stick to your job search so don’t let this
+    fresh start go to waste!</p>
+
+  <p><strong>Every Monday morning, try taking 10 minutes to:</strong></p>
+
+  <ul class="styled-list">
+    <li>Review the week's goals and any overdue tasks in your Planner.</li>
+    <li>Plan when you’ll do each task using the time blocks you set aside to work on your job search.</li>
+    <li>Add a note to calendar events with the tasks you plan to complete during each workblock.</li>
+  </ul>
+  
+  <?!= include('EmailFooter'); ?>
