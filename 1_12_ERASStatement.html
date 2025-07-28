@@ -1,0 +1,51 @@
+<!-- 1_12_ERASStatement.html -->
+<?
+  var { pctExploreDone, nExploreLeft,
+        pctResearchDone, nResearchLeft,
+        pctApplyDone, nApplyLeft,
+        pctStrategizeDone, nStrategizeLeft } = stageData;
+  var highlight = (typeof highlightProgress !== 'undefined') ? highlightProgress : true;
+  var stages = [
+    { name:'Explore',    pct:pctExploreDone,    left:nExploreLeft    },
+    { name:'Research',   pct:pctResearchDone,   left:nResearchLeft   },
+    { name:'Apply',      pct:pctApplyDone,      left:nApplyLeft      },
+    { name:'Strategize', pct:pctStrategizeDone, left:nStrategizeLeft }
+  ];
+  var msg = '';
+  var done  = stages.filter(s => s.pct === 1);
+  var left  = stages.filter(s => s.pct < 1);
+  if (done.length && !left.length) {
+    msg = 'You’ve completed every single task in ' 
+        + done.map(s => s.name).join(' and ') 
+        + '—incredible work!';
+  } else if (done.length && left.length) {
+    var next = left.reduce((m, s) => s.left < m.left ? s : m, left[0]);
+    if (next.left <= 4) {
+      msg = 'You’re done with all tasks for the ' 
+          + done.map(s => s.name).join(' and ')
+          + ' and you only have ' 
+          + next.left 
+          + (next.left === 1 ? ' task' : ' tasks')
+          + ' left in the ' 
+          + next.name 
+          + ' stage!';
+    }
+  } else {
+    var best = stages.reduce((m, s) => s.pct > m.pct ? s : m, stages[0]);
+    if (best.left <= 4) {
+      msg = 'You’re already ' 
+          + Math.round(best.pct * 100) 
+          + '% done with the '
+          + best.name 
+          + ' stage, and you only have ' 
+          + best.left 
+          + (best.left === 1 ? ' task' : ' tasks') 
+          + ' left!';
+    }
+  }
+?>  
+<style>
+  .progress-msg { margin:0 0 8px; }
+  .progress-msg.highlight { color:#28a745; font-weight:bold; }
+</style>
+<span class="progress-msg<?!= highlight ? ' highlight' : '' ?>"><?!= msg ?></span>
