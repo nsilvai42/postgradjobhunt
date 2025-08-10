@@ -1,0 +1,162 @@
+<!-- 2_13_S2Wk4.html -->
+<?!= include('EmailStyles'); ?>
+<?!= include('EmailHeader'); ?>
+
+<div class="section-text">
+  <p>
+    Hi <?!= firstName ?>,
+  </p>
+
+  <? if (cluster === 'Dormant') { ?>
+  <p>
+    As we get closer to the end of Sprint 2, let's focus on your most powerful application tool: the coffee chat.
+  </p>
+  <? } else { ?>
+  <p>
+    Here is your focused plan for the last week of Sprint 2. Let's keep the momentum going!
+  </p>
+  <? } ?>
+
+  <?!= include('PlannerButton', { careerPlanner: careerPlanner }) ?>
+</div>
+
+<? if (cluster === 'Dormant') { ?>
+
+<div class="section-header">
+  ⭐ The #1 Way to Get Hired
+</div>
+
+<div class="section-text">
+  <p class="lead-text teal">
+    Did you know that up to <u>75% of hires land their jobs through a connection</u> at the company?
+  </p>
+  <p>
+    Many of the best roles are never even posted publicly. A single, quick conversation can open doors that hundreds of online applications can't.
+  </p>
+  <h3 style="color:#1c8a70; margin-top:20px; font-size:18px;">
+    By this Friday: <u>Send one message</u> to ask for a brief chat with someone at a target company.
+   </h3>
+  <ul class="styled-list">
+    <li>
+      <strong>Connect:</strong> Use these tools to reach out.
+      <ul style="margin-top:5px; font-size:15px; color:#555;">
+        <li><a href="https://bottomlinecareer.org/informational-interview-templates">Template</a>: Requesting a Coffee Chat.</li>
+        <li><a href="https://bottomlinecareer.org/connecting-with-linkedin">Guide</a>: Connecting with LinkedIn.</li>
+      </ul>
+    </li>
+    <li>
+      <strong>Prepare:</strong> Once you have a chat scheduled, use this to prepare for it.
+       <ul style="margin-top:5px; font-size:15px; color:#555;">
+        <li><a href="https://tbl500amory.sharepoint.com/:w:/s/CareerResources/EUYZ9QXKZslLrWEFCMwFDVsB9UdhuZzP8BJuWOLF0G0FNw?e=ccQs3a">Worksheet</a>: Informational Interview Prep.</li>
+      </ul>
+    </li>
+     <li>
+      <strong>Follow Up:</strong> Send a follow-up after your conversation.
+       <ul style="margin-top:5px; font-size:15px; color:#555;">
+        <li><a href="https://bottomlinecareer.org/coffee-chat-followups">Template</a>: Coffee Chat Follow-Up.</li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+<? } else { ?>
+
+<?
+  // Determine which task block to render based on priority
+  var hasDue = TaskGroups && Object.keys(TaskGroups).length > 0;
+  var hasOverdue = OverdueGroups && Object.keys(OverdueGroups).length > 0;
+  var hasUpcoming = NextTasksByDate && Object.keys(NextTasksByDate).length > 0;
+?>
+
+<? if (hasDue) { ?>
+<div class="section-header">🎯 Tasks Due This Week</div>
+<?
+    var tasksShown = 0;
+    Object.keys(TaskGroups).forEach(function(lbl) {
+      if (tasksShown >= 3) { return; }
+
+      var slotsLeft = 3 - tasksShown;
+      var tasksInGroup = TaskGroups[lbl].slice(0, slotsLeft);
+
+      if (tasksInGroup.length > 0) {
+  ?>
+<?!= include('TaskGroup', { groupLabel: lbl, tasksInGroup: tasksInGroup }) ?>
+<?
+        tasksShown += tasksInGroup.length;
+      }
+    });
+  ?>
+
+<? } else if (hasOverdue) { ?>
+<div class="section-header">⏰ Overdue Tasks</div>
+<?
+    var tasksShown = 0;
+    Object.keys(OverdueGroups).forEach(function(lbl) {
+      if (tasksShown >= 3) { return; }
+
+      var slotsLeft = 3 - tasksShown;
+      var tasksInGroup = OverdueGroups[lbl].slice(0, slotsLeft);
+      
+      if (tasksInGroup.length > 0) {
+  ?>
+<?!= include('TaskGroup', { groupLabel: lbl, tasksInGroup: tasksInGroup }) ?>
+<?
+        tasksShown += tasksInGroup.length;
+      }
+    });
+  ?>
+
+<? } else if (hasUpcoming) { ?>
+<div class="section-header">➡️ Upcoming Tasks</div>
+<?!= include('UpcomingTasks', {
+      NextTasksByDate: NextTasksByDate,
+      resourceMap: resourceMap
+    }) ?>
+
+<? } else { ?>
+<div class="section-header">➡️ Upcoming Tasks</div>
+<div class="section-text">
+  <p class="lead-text teal">You have no tasks with upcoming deadlines in your planner - Is this intentional?</p>
+  <p>Take a few seconds to visit your planner and check that you've assigned a deadline to all of your undone tasks.
+  </p>
+  <p>In the meantime: Have you checked out your Planner's <strong>Resource Center</strong>?</p>
+  <p>It's filled with tools and guides for every stage of your job search.</p>
+  <div style="text-align:center; margin:20px 0;">
+    <a href="<?!= resourceLink ?>" target="_blank" style="display:inline-block; border:1px solid #cccccc;">
+      <img src="https://drive.google.com/uc?export=view&id=1_m-bxIO7myJsp5n67t2D5CFk1gmnGuT-"
+        alt="A screenshot of the Resource Center in the student planner."
+        style="width:100%; max-width:550px; display:block;">
+    </a>
+  </div>
+</div>
+<? } ?>
+
+<? } ?>
+
+<div class="section-header">🧠 Psych Tip of the Week: <u>The "End of Sprint" Reflection</u></div>
+
+<div class="section-text">
+  <p>As we close out Sprint 2, it's easy to focus only on what's left to do. But taking a moment to reflect is one of the most powerful ways to make the *next* sprint even better.</p>
+
+  <h3 style="color:#1c8a70; margin-top:20px; font-size:18px;">Our brains naturally evolved to focus on what could go wrong. Celebrating a small win increases your belief in yourself, motivating your for your next challenge.</h3>
+  
+  <p class="lead-text teal" style="margin-top:24px;">
+    <strong>Take 60 seconds to answer these two questions:</strong>
+  </p>
+  <ol class="styled-list">
+    <li>
+      <strong>What's one thing I'm proud of from this sprint?</strong>
+    </li>
+     <li>
+      <strong>What's one small thing I'll do differently in the next sprint?</strong>
+       <ul style="margin-top:5px; font-size:15px; color:#555; padding-left: 20px; list-style-type: none;">
+        <li>➡️ Deciding on a specific, small action turns a vague goal into a concrete plan, and makes you more likely to actually do it.</li>
+      </ul>
+    </li>
+  </ol>
+  <p>
+    This simple exercise helps you recognize your progress, build momentum, and make your next sprint more focused and effective.
+  </p>
+
+
+<?!= include('EmailFooter'); ?>
