@@ -1,0 +1,162 @@
+<!-- 2_15_S3Wk2.html -->
+<?!= include('EmailStyles'); ?>
+<?!= include('EmailHeader'); ?>
+
+<div class="section-text">
+  <p>Hi <?!= firstName ?>,</p>
+
+  <p>
+    We’re in the <strong>second-to-last week</strong> of the summer program. If you’re feeling tired, you’re not alone —
+    this is often the toughest part of the job search to power through.
+  </p>
+  <p>
+    Here’s the truth: <strong>most recent grads underestimate how long it takes to land a job.</strong>
+    The finish line is closer than it feels, and every action you take now increases your chances of getting that offer.
+    Don’t give up when you’re this close!
+  </p>
+
+  <?!= include('PlannerButton', { careerPlanner: careerPlanner }) ?>
+</div>
+
+<? if (cluster === 'Dormant') { ?>
+
+  <div class="section-header">Are You Applying Correctly?</div>
+
+  <div class="section-text">
+    <p>
+      Most companies use automated screening to filter out a large share of resumes before a human ever sees them.
+      And when a hiring manager does read yours, you often have less than 30 seconds to make an impression.
+    </p>
+    <p>
+      <strong>Tailoring each application to the job is essential.</strong> One high‑quality, targeted application
+      will get you further than ten generic ones.
+    </p>
+  </div>
+
+  <div class="section-header">🎯 Your High‑Impact Application Checklist</div>
+  <div class="section-text">
+    <p>Follow these steps for each role — they take more time, but dramatically improve your odds of hearing back.</p>
+
+    <p class="lead-text teal">Step 1: Find the Right Roles.</p>
+    <ol type="a">
+      <li>Set up <a href="https://bottomlinecareer.org/job-alerts">job alerts</a> to get postings in your inbox.</li>
+      <li>Block 30 minutes 2x a week to scan new postings.</li>
+      <li>Add promising roles to a <a href="https://bottomlinecareer.org/teal-job-tracker">job tracker</a>.</li>
+    </ol>
+
+    <p class="lead-text teal">Step 2: Match to the Job Description.</p>
+    <ol type="a">
+      <li>Identify keywords using AI with <a href="https://bottomlinecareer.org/ai-job-application-tools">this worksheet</a>.</li>
+      <li>Use the exact words in your resume (to pass automated screening).</li>
+      <li>Format correctly — <a href="https://bottomlinecareer.org/resume-module">this short module</a> has templates and tips.</li>
+    </ol>
+
+    <p class="lead-text teal">Step 3: Research the Company.</p>
+    <ol type="a">
+      <li>Review their website and social media.</li>
+      <li>Mention a project you connect with in your cover letter (<a href="https://bottomlinecareer.org/crafting-cover-letters">worksheet</a>).</li>
+      <li>Mirror the company's language in your experiences (<a href="https://bottomlinecareer.org/researching-companies">worksheet</a>).</li>
+    </ol>
+
+    <p class="lead-text teal">Step 4: Get a Referral.</p>
+    <ol type="a">
+      <li>Reach out to someone in the company using <a href="https://bottomlinecareer.org/informational-interview-templates">this template</a>.</li>
+      <li>Ask: “What makes someone successful in this role?” and “What makes someone struggle?”</li>
+      <li>Highlight how you match success criteria and avoid the challenges in your application.</li>
+    </ol>
+
+    <p class="lead-text teal">Step 5: Do a Final Check.</p>
+    <ol type="a">
+      <li>Ask a friend/mentor to review your materials (and let them know you’re job searching!).</li>
+      <li>Use this <a href="https://bottomlinecareer.org/resume-checklist">Resume Checklist</a> to catch any gaps.</li>
+      <li>Use <a href="https://bottomlinecareer.org/ai-job-application-tools">AI prompts and tools</a> to strengthen your materials.</li>
+    </ol>
+  </div>
+
+<? } else { ?>
+
+<div class="section-text">
+  <p>
+    Your consistency has paid off. Keep channeling that momentum into these final, high-impact tasks — they’re the ones
+    most likely to move you toward an offer.
+  </p>
+</div>
+
+<?
+  // Determine which task block to render based on priority
+  var hasDue = TaskGroups && Object.keys(TaskGroups).length > 0;
+  var hasOverdue = OverdueGroups && Object.keys(OverdueGroups).length > 0;
+  var hasUpcoming = NextTasksByDate && Object.keys(NextTasksByDate).length > 0;
+?>
+
+<? if (hasDue) { ?>
+<div class="section-header">🎯 Tasks Due This Week</div>
+<?
+    var tasksShown = 0;
+    Object.keys(TaskGroups).forEach(function(lbl) {
+      if (tasksShown >= 3) { return; }
+
+      var slotsLeft = 3 - tasksShown;
+      var tasksInGroup = TaskGroups[lbl].slice(0, slotsLeft);
+
+      if (tasksInGroup.length > 0) {
+  ?>
+<?!= include('TaskGroup', { groupLabel: lbl, tasksInGroup: tasksInGroup }) ?>
+<?
+        tasksShown += tasksInGroup.length;
+      }
+    });
+  ?>
+
+<? } else if (hasOverdue) { ?>
+<div class="section-header">⏰ Overdue Tasks</div>
+<?
+    var tasksShown = 0;
+    Object.keys(OverdueGroups).forEach(function(lbl) {
+      if (tasksShown >= 3) { return; }
+
+      var slotsLeft = 3 - tasksShown;
+      var tasksInGroup = OverdueGroups[lbl].slice(0, slotsLeft);
+      
+      if (tasksInGroup.length > 0) {
+  ?>
+<?!= include('TaskGroup', { groupLabel: lbl, tasksInGroup: tasksInGroup }) ?>
+<?
+        tasksShown += tasksInGroup.length;
+      }
+    });
+  ?>
+
+<? } else if (hasUpcoming) { ?>
+<div class="section-header">➡️ Upcoming Tasks</div>
+<?!= include('UpcomingTasks', {
+      NextTasksByDate: NextTasksByDate,
+      resourceMap: resourceMap
+    }) ?>
+
+<? } else { ?>
+<div class="section-header">➡️ Set Your Next Goal</div>
+<div class="section-text">
+  <p class="lead-text teal">You have no tasks with upcoming deadlines in your planner.</p>
+  <p>Successful job searchers maintain momentum by always having their next move planned. The best way to keep your
+    progress is to give yourself a new goal - because an object in motion stays in motion.
+  </p>
+  <p>Take 5 minutes to visit your planner and set a deadline for your next most important task.
+  </p>
+</div>
+<? } ?>
+<? } ?>
+
+<div class="section-header">🧠 Psych Tip of the Week: The 2‑Minute Rule</div>
+<div class="section-text">
+  <p>When a task feels big, starting is the hardest part. <strong>If it takes less than 2 minutes, do it now.</strong></p>
+  <ol style="margin:16px 0 0 18px; padding:0; font-size:16px;">
+    <li><strong>Spot a small task?</strong> Examples: Send a thank‑you note, update one resume bullet, connect with one LinkedIn contact, save one job posting.</li>
+    <li style="margin-top:12px;"><strong>Ask:</strong> “Can I finish this in under 2 minutes?”</li>
+    <li style="margin-top:12px;"><strong>If yes — do it immediately.</strong> No lists. No delays.</li>
+  </ol>
+  <p class="lead-text teal" style="margin-top:20px;">
+    These quick wins create momentum and make bigger tasks feel easier to tackle.
+  </p>
+
+<?!= include('EmailFooter'); ?>
