@@ -1,9 +1,5 @@
-/**
- * 
- * Script Name: 0_5_SendOutreach.gs
- * 
- * 
-/
+// Script Name: 0_5_SendOutreach.gs
+ 
 
 // ============================================================================
 // SECTION 1: SETTINGS & GLOBALS
@@ -49,6 +45,9 @@ const TEMPLATE_MAP = {
   S2Wk1: '2_10_S2Wk1',
   S2Wk2: '2_11_S2Wk2',
   S2Wk3: '2_12_S2Wk3',
+  S2Wk4: '2_13_S2Wk4',
+  S3Wk1: '2_14_S3Wk1',
+  S3Wk2: '2_15_S3Wk2',
   OnTrack_Intro: '3_01_S1Wk3_OnTrack_Intro',
   OffTrack_Intro: '3_02_S1Wk3_OffTrack_Intro',
   OffTrack_PurposeFear: '3_03_S1Wk3_OffTrack_PurposeFear',
@@ -705,13 +704,13 @@ function _sendWeeklyNudge(showUi) {
         onTrackPct: student.onTrackPct,
         onTrackPctile: student.onTrackPctile,
         onTrackVsAvg: student.onTrackPct - cohortBenchmarks.avgOnTrackPct,
-        // growth & percentiles
+        
         growthDelta: student.growthDelta,
         growthPct: student.percentiles.growthPct,
         topRank: student.percentiles.topRank,
         growthVsAvg: student.diffs.growthVsAvg,
 
-        // ERAS-stage metrics & percentiles
+        // ERAS-stage metrics & percentiles (FIXED)
         explorePct: student.explorePct,
         explorePctile: student.percentiles.explorePctile,
         exploreVsAvg: student.diffs.exploreVsAvg,
