@@ -1,6 +1,6 @@
-/**
- * Script Name: 0_0_GlobalConstants.gs
- *
+//Script Name: 0_0_GlobalConstants.gs
+ 
+/*
  * Central configuration constants used across all phases of the Career Sprint Apps Script.
  * Includes sheet names, column headers, planner-template mappings, outreach plan columns,
  * task-data columns, and more.
