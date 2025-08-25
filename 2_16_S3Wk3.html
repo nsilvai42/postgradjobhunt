@@ -1,0 +1,117 @@
+<!-- 2_16_S3Wk3.html -->
+<?!= include('EmailStyles'); ?>
+<?!= include('EmailHeader'); ?>
+
+<div class="section-text">
+  <p>Hi <?!= firstName ?>,</p>
+
+  <p>We’re in the <strong>second-to-last week</strong> of the summer program. Leverage the motivation from this final stretch to power through your applications and career tasks!</p>
+
+  <?!= include('PlannerButton', { careerPlanner: careerPlanner }) ?>
+</div>
+
+<? if (cluster === 'Dormant') { ?>
+
+  <div class="section-header">Practice Telling Your Story</div>
+
+  <div class="section-text">
+    <p>An interview isn't just a test; it's a conversation where you get to tell your story. Companies don't hire resumes—they hire people. Your unique experiences and perspective are what set you apart.</p>
+
+     <p>This week, we're focusing on turning interviews into offers. It's time to practice, prepare, and ace the interview!</p>
+
+     <p>Follow these steps to turn your experiences into compelling interview answers.</p>
+     <p class="lead-text teal">Step 1: Outline Your Key Stories.</p>
+    <ol type="a">
+      <li>Brainstorm 3-5 key experiences from your resume.</li>
+      <li>For each, use the STAR method (Situation, Task, Action, Result) to structure your story.</li>
+      <li>Practice telling these stories out loud until they feel natural.</li>
+    </ol>
+
+    <p class="lead-text teal">Step 2: Prepare for Common Questions.</p>
+    <ol type="a">
+      <li>Draft answers to questions like "Tell me about yourself" and "Why are you interested in this role?" using the <a href="https://bottomlinecareer.org/interview-talking-points">Interview Talking Points</a> worksheet.</li>
+      <li>Use <a href="https://bottomlinecareer.org/google-warmup-interview-practice">AI tools</a> to refine your answers and get feedback.</li>
+      <li>Record yourself answering questions to check your pacing and body language.</li>
+    </ol>
+    
+  </div>
+
+<? } else { ?>
+
+<?
+  // Determine which task block to render based on priority
+  var hasDue = TaskGroups && Object.keys(TaskGroups).length > 0;
+  var hasOverdue = OverdueGroups && Object.keys(OverdueGroups).length > 0;
+  var hasUpcoming = NextTasksByDate && Object.keys(NextTasksByDate).length > 0;
+?>
+
+<? if (hasDue) { ?>
+<div class="section-header">🎯 Tasks Due Soon</div>
+<?
+    var tasksShown = 0;
+    Object.keys(TaskGroups).forEach(function(lbl) {
+      if (tasksShown >= 3) { return; }
+
+      var slotsLeft = 3 - tasksShown;
+      var tasksInGroup = TaskGroups[lbl].slice(0, slotsLeft);
+
+      if (tasksInGroup.length > 0) {
+  ?>
+<?!= include('TaskGroup', { groupLabel: lbl, tasksInGroup: tasksInGroup }) ?>
+<?
+        tasksShown += tasksInGroup.length;
+      }
+    });
+  ?>
+
+<? } else if (hasOverdue) { ?>
+<div class="section-header">⏰ Overdue Tasks</div>
+<?
+    var tasksShown = 0;
+    Object.keys(OverdueGroups).forEach(function(lbl) {
+      if (tasksShown >= 3) { return; }
+
+      var slotsLeft = 3 - tasksShown;
+      var tasksInGroup = OverdueGroups[lbl].slice(0, slotsLeft);
+      
+      if (tasksInGroup.length > 0) {
+  ?>
+<?!= include('TaskGroup', { groupLabel: lbl, tasksInGroup: tasksInGroup }) ?>
+<?
+        tasksShown += tasksInGroup.length;
+      }
+    });
+  ?>
+
+<? } else if (hasUpcoming) { ?>
+<div class="section-header">➡️ Upcoming Tasks</div>
+<?!= include('UpcomingTasks', {
+      NextTasksByDate: NextTasksByDate,
+      resourceMap: resourceMap
+    }) ?>
+
+<? } else { ?>
+<div class="section-header">➡️ Set Your Next Goal</div>
+<div class="section-text">
+  <p class="lead-text teal">You have no tasks with upcoming deadlines in your planner.</p>
+  <p>Successful job searchers maintain momentum by always having their next move planned. The best way to keep your
+    progress is to give yourself a new goal - because an object in motion stays in motion.
+  </p>
+  <p>Take 5 minutes to visit your planner and set a deadline for your next most important task.
+  </p>
+</div>
+<? } ?>
+<? } ?>
+
+<div class="section-header">🧠 Psych Tip of the Week: Cognitive Reappraisal</div>
+<div class="section-text">
+  <p>Facing a tough interview or a rejection? How you frame it matters. Instead of seeing it as a threat ("I'm going to fail"), re-frame it as a challenge ("This is a chance to show my skills").</p>
+  <ol style="margin:16px 0 0 18px; padding:0; font-size:16px;">
+    <li><strong>Identify the negative thought:</strong> "I'm not qualified for this job."</li>
+    <li style="margin-top:12px;"><strong>Challenge it and re-frame it:</strong> "This role is a stretch, which makes it a great opportunity to learn. I'll focus on the qualifications I *do* have."</li>
+  </ol>
+  <p class="lead-text teal" style="margin-top:20px;">
+   This small mental shift can reduce anxiety and improve performance by turning stress into a source of energy.
+  </p>
+
+<?!= include('EmailFooter'); ?>
