@@ -1,0 +1,133 @@
+<!-- 2_17_S3Wk4.html -->
+<?!= include('EmailStyles'); ?>
+<?!= include('EmailHeader'); ?>
+
+<div class="section-text">
+  <p>Hi <?!= firstName ?>,</p>
+
+  <p>Twelve weeks ago, we shared our biggest job search fears.</p>
+  <p class="lead-text teal">"Rejection" "Not being good enough" "Feeling out of place".</p>
+  <p>The worries we keep to ourselves - that we face alone - echoed in dozens on planners. I can't say for sure our fears will never come true. But even if they do - we will keep moving.</p>
+  <p class="lead-text teal">You may not be where you hoped you would be. We rarely are.</p> 
+  <p>We fall down and get back up even when we know we'll fall again.</p> 
+  <p class="lead-text teal">Through it all, we always, somehow, end up okay.</p> 
+  <p>The hill ahead of you may feel endless, and you may wonder why you haven't reached the top if you've been climbing for so long.</p>
+  <p>At some point, you'll take a break. And when you do, you'll turn around and be shocked. It's easy to forget to look at the view. Take a second now to think about where you were, and where you are now. You should be proud of yourself.</p>
+  <p class="lead-text teal">Don't forget to look back - it's the only way to find your way forward.</p> 
+  <p>Because if you've come this far, then you can definitely go even farther. Let's make this final week count.</p>
+
+  <?!= include('PlannerButton', { careerPlanner: careerPlanner }) ?>
+</div>
+
+<? if (cluster === 'Dormant') { ?>
+
+<div class="section-header">A Snapshot of How Far You've Come</div>
+<div class="section-text">
+  <p>Together, you’ve completed <strong>over 320 tasks</strong>. That's:</p>
+  <ul>
+    <li><strong>320 resumes tailored</strong></li> 
+    <li><strong>320 contacts researched</strong></li> 
+      <li><strong>320 steps taken toward a new career</strong></li> 
+      </ul>
+  
+  <p>You built a foundation that will serve you long after your first job.</p>
+  <p>Your journey is your own, but you are not alone in this effort. Keep going.</p>
+</div>
+
+<div class="section-header">🎯 Looking Forward and Beyond</div>
+<div class="section-text">
+  <p>The summer job hunt may be ending, but your momentum doesn’t have to. Finish this chapter without forgetting what it taught you:</p>
+  <ul class="styled-list">
+    <li><strong>Schedule Your Next Move:</strong> Open your calendar and book a 30-minute meeting with yourself next week. Map out your top 3 priorities for September.</li>
+    <li><strong>Activate Your Allies:</strong> Choose one person—a mentor, a friend—and send them an update. Tell them your goals and when you’ll update them next.</li>
+    <li><strong>Celebrate Your Wins:</strong> Take 10 minutes to shift your focus away from where you aren't, and towards where you are. For each step you've taken, write down what you learned. You have all the tools in your toolbox now.</li>
+  </ul>
+</div>
+
+<? } else { ?>
+
+<div class="section-header">✈️ You've Been Sprinting. This Week, It's Time to Fly.</div>
+<div class="section-text">
+  <p>You have been putting in the work week after week, building momentum that has set you apart. This is it - the final push. And if there's anyone who can make it to that finish line, it's you.</p>
+</div>
+
+<?
+  // Determine which task block to render based on priority
+  var hasDue = TaskGroups && Object.keys(TaskGroups).length > 0;
+  var hasOverdue = OverdueGroups && Object.keys(OverdueGroups).length > 0;
+  var hasUpcoming = NextTasksByDate && Object.keys(NextTasksByDate).length > 0;
+?>
+
+<? if (hasDue) { ?>
+<div class="section-header">🎯 Tasks Due This Week</div>
+<?
+    var tasksShown = 0;
+    Object.keys(TaskGroups).forEach(function(lbl) {
+      if (tasksShown >= 3) { return; }
+
+      var slotsLeft = 3 - tasksShown;
+      var tasksInGroup = TaskGroups[lbl].slice(0, slotsLeft);
+
+      if (tasksInGroup.length > 0) {
+  ?>
+<?!= include('TaskGroup', { groupLabel: lbl, tasksInGroup: tasksInGroup }) ?>
+<?
+        tasksShown += tasksInGroup.length;
+      }
+    });
+  ?>
+
+<? } else if (hasOverdue) { ?>
+<div class="section-header">⏰ Overdue Tasks</div>
+<?
+    var tasksShown = 0;
+    Object.keys(OverdueGroups).forEach(function(lbl) {
+      if (tasksShown >= 3) { return; }
+
+      var slotsLeft = 3 - tasksShown;
+      var tasksInGroup = OverdueGroups[lbl].slice(0, slotsLeft);
+      
+      if (tasksInGroup.length > 0) {
+  ?>
+<?!= include('TaskGroup', { groupLabel: lbl, tasksInGroup: tasksInGroup }) ?>
+<?
+        tasksShown += tasksInGroup.length;
+      }
+    });
+  ?>
+
+<? } else if (hasUpcoming) { ?>
+<div class="section-header">➡️ Upcoming Tasks</div>
+<?!= include('UpcomingTasks', {
+      NextTasksByDate: NextTasksByDate,
+      resourceMap: resourceMap
+    }) ?>
+
+<? } else { ?>
+<div class="section-header">➡️ Set Your Next Goal</div>
+<div class="section-text">
+  <p class="lead-text teal">You have no tasks with upcoming deadlines in your planner.</p>
+  <p>The best way to keep your progress is to give yourself a new goal— an object in motion stays in motion.</p>
+  <p>Take 5 minutes to think about one task you've been meaning to do. Name what you'll do, how you'll do it, and when you'll do it.</p>
+</div>
+<? } ?>
+
+<? } ?>
+
+<div class="section-header">🧠 Psych Tip of the Week: <u>The Peak-End Rule</u></div>
+<div class="section-text">
+  <p>How do we remember experiences? Our brains don't average it all out.</p>
+  <p><strong>Our memory is disproportionately shaped by the most intense moment (the "peak") and the very end</strong>. Think about a great movie— a powerful ending can make the whole film feel brilliant.</p>
+  
+  <p>Your summer is no different: How you finish defines how you remember it and, importantly, how you carry momentum forward.</p>
+  
+  <p class="lead-text teal"><strong>Your mission: Create a new "peak" and a strong "end":</strong></p>
+
+  <ol class="styled-list">
+    <li><strong>Create a Peak Moment:</strong> Do one thing that makes you feel powerful. Apply to a dream company. Create a cover letter that feels authentic. Make this week’s high point a memorable one.</li>
+    <li><strong>End on Your Terms:</strong> On Friday, regardless of how much you got done, close your laptop. Do something that makes you happy. Celebrate. You want to leave feeling energized and ready for what’s next, not burnt out.</li>
+  </ol>
+  
+  <p>You control your narrative. End this week on a high, you deserve it.</p>
+
+<?!= include('EmailFooter'); ?>
